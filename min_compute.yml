@@ -1,0 +1,80 @@
+version: '1.0.4' # Update this version key as needed to match your release version
+
+compute_spec:
+
+  miner:
+    # Updated to reflect new requirements
+    cpu:
+      min_cores: 4
+      min_speed: 2.5
+      recommended_cores: 8
+      recommended_speed: 3.5
+      architecture: "x86_64"
+
+    gpu:
+      required: True
+      min_vram: 18  # Updated to 18GB as per new requirement
+      recommended_vram: 24
+      cuda_cores: 1024
+      min_compute_capability: 6.0
+      recommended_compute_capability: 7.0
+      recommended_gpu: "NVIDIA A10"
+
+    memory:
+      min_ram: 16
+      min_swap: 4
+      recommended_swap: 8
+      ram_type: "DDR4"
+
+    storage:
+      min_space: 24
+      recommended_space: 100
+      type: "SSD"
+      min_iops: 1000
+      recommended_iops: 5000
+
+    os:
+      name: "Ubuntu"
+      version: "20.04, 22.04"  # Updated to include both versions
+
+  validator:
+    # Updated to reflect new requirements
+    cpu:
+      min_cores: 4
+      min_speed: 2.5
+      recommended_cores: 8
+      recommended_speed: 3.5
+      architecture: "x86_64"
+
+    gpu:
+      required: True
+      min_vram: 24  # Matches the new requirement
+      recommended_vram: 36
+      cuda_cores: 1024
+      min_compute_capability: 6.0
+      recommended_compute_capability: 7.0
+      recommended_gpu: "NVIDIA A10"
+
+    memory:
+      min_ram: 16
+      min_swap: 4
+      recommended_swap: 8
+      ram_type: "DDR4"
+
+    storage:
+      min_space: 24
+      recommended_space: 100
+      type: "SSD"
+      min_iops: 1000
+      recommended_iops: 5000
+
+    os:
+      name: "Ubuntu"
+      version: "20.04, 22.04"  # Updated to include both versions
+
+network_spec:
+  bandwidth:
+    download: 100  # Minimum download bandwidth (Mbps)
+    upload: 20     # Minimum upload bandwidth (Mbps)
+
+# Note: Ensure to include requirements for Python 3.9 or 3.10, and CUDA 12.0 or higher in your setup or installation guide.
