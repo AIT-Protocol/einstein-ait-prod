@@ -78,7 +78,7 @@ class HumanAgent(HuggingFaceLLM):
 
         # Example message: "Derive the formula for..."
         self.challenge = super().query(message="Pose a mathematical problem", cleaner=cleaner)
-        self.challenge = self.task.format_challenge(self.challenge, domain="mathematics")
+        self.challenge = self.task.format_challenge(self.challenge)
         self.challenge_time = time.time() - t0
         
         bt.logging.info(f"🤖 Challenge created: {self.challenge} in {self.challenge_time:.2f} seconds")
