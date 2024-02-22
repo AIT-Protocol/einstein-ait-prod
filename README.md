@@ -143,8 +143,8 @@ python neurons/miners/openai/miner.py /
 --netuid 78 /
 --subtensor.network test /
 --wallet.name <your miner wallet> /
---wallet.hotkey <your validator hotkey> /
---neuron.model_id gpt-4-1106-preview /
+--wallet.hotkey <your miner hotkey> /
+--neuron.model_id gpt /
 --neuron.max_tokens 1024 /
 --neuron.temperature 0.9 /
 --logging.debug
