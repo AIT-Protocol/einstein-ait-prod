@@ -1,7 +1,7 @@
 import sys
 import bittensor as bt
 from dataclasses import dataclass
-from prompting.tasks import Task
+from einstein.tasks import Task
 
 
 @dataclass

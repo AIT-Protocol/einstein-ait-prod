@@ -1,5 +1,5 @@
 import pytest
-from prompting.persona import Persona, create_persona
+from einstein.persona import Persona, create_persona
 
 def test_persona_initialization():
     assert type(create_persona()) == Persona

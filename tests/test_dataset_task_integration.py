@@ -1,5 +1,5 @@
 import pytest
-from prompting.tasks import Task
+from einstein.tasks import Task
 from .fixtures.llm import LLM_PIPELINE
 from .fixtures.task import CONTEXTS, TASKS
 

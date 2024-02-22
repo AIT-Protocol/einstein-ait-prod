@@ -4,8 +4,8 @@ import argparse
 import asyncio
 import threading
 import bittensor as bt
-from prompting.base.neuron import BaseNeuron
-from prompting.utils.config import add_miner_args
+from einstein.base.neuron import BaseNeuron
+from einstein.utils.config import add_miner_args
 from traceback import print_exception
 
 

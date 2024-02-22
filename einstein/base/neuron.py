@@ -6,11 +6,11 @@ import bittensor as bt
 from abc import ABC, abstractmethod
 
 # Sync calls set weights and also resyncs the metagraph.
-from prompting.utils.config import check_config, add_args, config
-from prompting.utils.misc import ttl_get_block
-from prompting import __spec_version__ as spec_version
+from einstein.utils.config import check_config, add_args, config
+from einstein.utils.misc import ttl_get_block
+from einstein import __spec_version__ as spec_version
 
-from prompting.mock import MockSubtensor, MockMetagraph
+from einstein.mock import MockSubtensor, MockMetagraph
 
 
 class BaseNeuron(ABC):

@@ -1,6 +1,6 @@
 import pytest
 
-from prompting.tasks import Task
+from einstein.tasks import Task
 from .fixtures.task import CONTEXTS, TASKS
 from .fixtures.llm import LLM_PIPELINE
 

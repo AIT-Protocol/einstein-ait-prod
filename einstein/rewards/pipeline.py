@@ -1,9 +1,9 @@
 from typing import List
 
-from prompting.tasks import MathTask
-from prompting.rewards import BaseRewardModel
-from prompting.rewards.float_diff import FloatDiffModel
-from prompting.rewards.advanced_math import AdvancedMathModel
+from einstein.tasks import MathTask
+from einstein.rewards import BaseRewardModel
+from einstein.rewards.float_diff import FloatDiffModel
+from einstein.rewards.advanced_math import AdvancedMathModel
 
 SUPPORTED_TASKS = {
     "math": MathTask

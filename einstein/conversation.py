@@ -1,8 +1,8 @@
-from prompting.tasks import (
+from einstein.tasks import (
     Task,
     MathTask,
 )
-from prompting.tools import (
+from einstein.tools import (
     MathDataset,
 )
 

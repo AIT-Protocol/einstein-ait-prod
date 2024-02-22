@@ -1,5 +1,5 @@
 
-from prompting.tools import MockDataset, MathDataset
+from einstein.tools import MockDataset, MathDataset
 
 DATASETS = [
     # MockDataset,

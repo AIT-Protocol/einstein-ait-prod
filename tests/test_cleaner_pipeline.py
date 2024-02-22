@@ -1,4 +1,4 @@
-from prompting.cleaners.cleaner import CleanerPipeline
+from einstein.cleaners.cleaner import CleanerPipeline
 
 
 def test_cleaning_pipeline():

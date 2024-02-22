@@ -7,7 +7,7 @@ from dataclasses import asdict, dataclass
 from datetime import datetime
 from typing import List
 from loguru import logger
-import prompting
+import einstein
 
 @dataclass
 class Log:
@@ -61,8 +61,8 @@ def init_wandb(self, reinit=False):
     """Starts a new wandb run."""
     tags = [
         self.wallet.hotkey.ss58_address,
-        prompting.__version__,
-        str(prompting.__spec_version__),
+        einstein.__version__,
+        str(einstein.__spec_version__),
         f"netuid_{self.metagraph.netuid}",
     ]
 

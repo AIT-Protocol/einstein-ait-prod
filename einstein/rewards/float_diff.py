@@ -2,7 +2,7 @@ import time
 import torch
 from typing import List
 from sympy.parsing.sympy_parser import parse_expr
-from prompting.rewards import BaseRewardModel, BatchRewardOutput, RewardModelTypeEnum
+from einstein.rewards import BaseRewardModel, BatchRewardOutput, RewardModelTypeEnum
 
 
 class FloatDiffModel(BaseRewardModel):

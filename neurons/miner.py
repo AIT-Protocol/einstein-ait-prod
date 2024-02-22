@@ -2,12 +2,15 @@ import wandb
 import time
 import typing
 import bittensor as bt
+
 # Bittensor Miner Template:
-import prompting
-from prompting.protocol import PromptingSynapse
+import einstein
+from einstein.protocol import CoreSynapse
+
 # import base miner class which takes care of most of the boilerplate
-from prompting.base.miner import BaseMinerNeuron
+from einstein.base.miner import BaseMinerNeuron
 from datetime import datetime
+
 
 class Miner(BaseMinerNeuron):
     """
@@ -19,13 +22,10 @@ class Miner(BaseMinerNeuron):
     """
 
     def __init__(self, config=None):
-        super(Miner, self).__init__(config=config)                
+        super(Miner, self).__init__(config=config)
         self.identity_tags = None
-         
 
-    async def blacklist(
-        self, synapse: PromptingSynapse
-    ) -> typing.Tuple[bool, str]:
+    async def blacklist(self, synapse: CoreSynapse) -> typing.Tuple[bool, str]:
         """
         Determines whether an incoming request should be blacklisted and thus ignored. Your implementation should
         define the logic for blacklisting requests based on your needs and desired security parameters.
@@ -35,7 +35,7 @@ class Miner(BaseMinerNeuron):
         requests before they are deserialized to avoid wasting resources on requests that will be ignored.
 
         Args:
-            synapse (PromptingSynapse): A synapse object constructed from the headers of the incoming request.
+            synapse (CoreSynapse): A synapse object constructed from the headers of the incoming request.
 
         Returns:
             Tuple[bool, str]: A tuple containing a boolean indicating whether the synapse's hotkey is blacklisted,
@@ -67,7 +67,7 @@ class Miner(BaseMinerNeuron):
         )
         return False, "Hotkey recognized!"
 
-    async def priority(self, synapse: PromptingSynapse) -> float:
+    async def priority(self, synapse: CoreSynapse) -> float:
         """
         The priority function determines the order in which requests are handled. More valuable or higher-priority
         requests are processed before others. You should design your own priority mechanism with care.
@@ -75,7 +75,7 @@ class Miner(BaseMinerNeuron):
         This implementation assigns priority to incoming requests based on the calling entity's stake in the metagraph.
 
         Args:
-            synapse (PromptingSynapse): The synapse object that contains metadata about the incoming request.
+            synapse (CoreSynapse): The synapse object that contains metadata about the incoming request.
 
         Returns:
             float: A priority score derived from the stake of the calling entity.
@@ -97,34 +97,38 @@ class Miner(BaseMinerNeuron):
             f"Prioritizing {synapse.dendrite.hotkey} with value: ", prirority
         )
         return prirority
-    
+
     def init_wandb(self):
         bt.logging.info("Initializing wandb...")
-        
+
         uid = f"uid_{self.metagraph.hotkeys.index(self.wallet.hotkey.ss58_address)}"
         net_uid = f"netuid_{self.config.netuid}"
         tags = [
-            self.wallet.hotkey.ss58_address, 
-            net_uid, 
+            self.wallet.hotkey.ss58_address,
+            net_uid,
             f"uid_{uid}",
-            prompting.__version__,
-            str(prompting.__spec_version__),
+            einstein.__version__,
+            str(einstein.__spec_version__),
         ]
-        
+
         run_name = None
         if self.identity_tags:
             # Add identity tags to run tags
-            tags += self.identity_tags     
+            tags += self.identity_tags
 
-            # Create run name from identity tags       
-            run_name_tags = [str(tag) for tag in self.identity_tags]            
-            
+            # Create run name from identity tags
+            run_name_tags = [str(tag) for tag in self.identity_tags]
+
             # Add uid, netuid and timestamp to run name
-            run_name_tags += [uid, net_uid, datetime.now().strftime('%Y_%m_%d_%H_%M_%S')]
+            run_name_tags += [
+                uid,
+                net_uid,
+                datetime.now().strftime("%Y_%m_%d_%H_%M_%S"),
+            ]
 
             # Compose run name
-            run_name = '_'.join(run_name_tags)                
-                    
+            run_name = "_".join(run_name_tags)
+
         # inits wandb in case it hasn't been inited yet
         self.wandb_run = wandb.init(
             name=run_name,
@@ -132,13 +136,20 @@ class Miner(BaseMinerNeuron):
             entity=self.config.wandb.entity,
             config=self.config,
             mode="online" if self.config.wandb.on else "offline",
-            tags=tags,                
+            tags=tags,
         )
-    
-    def log_event(self, timing: float, prompt: str, completion: str, system_prompt: str, extra_info: dict = {}):        
+
+    def log_event(
+        self,
+        timing: float,
+        prompt: str,
+        completion: str,
+        system_prompt: str,
+        extra_info: dict = {},
+    ):
         if not getattr(self, "wandb_run", None):
             self.init_wandb()
-        
+
         step_log = {
             "epoch_time": timing,
             # "block": self.last_epoch_block,
@@ -151,10 +162,10 @@ class Miner(BaseMinerNeuron):
             "incentive": self.metagraph.I[self.uid].item(),
             "consensus": self.metagraph.C[self.uid].item(),
             "dividends": self.metagraph.D[self.uid].item(),
-            **extra_info
+            **extra_info,
         }
 
-        bt.logging.info('Logging event to wandb...', step_log)
+        bt.logging.info("Logging event to wandb...", step_log)
         wandb.log(step_log)
 
 

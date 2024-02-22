@@ -4,9 +4,9 @@ from typing import List, Dict
 import bittensor as bt
 
 from transformers import Pipeline, pipeline
-from prompting.mock import MockPipeline
+from einstein.mock import MockPipeline
 
-from prompting.cleaners.cleaner import CleanerPipeline
+from einstein.cleaners.cleaner import CleanerPipeline
 
 
 def load_pipeline(

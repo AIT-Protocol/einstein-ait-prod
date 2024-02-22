@@ -1,6 +1,6 @@
 import pytest
-from prompting.tasks import Task
-from prompting.agent import HumanAgent, create_persona
+from einstein.tasks import Task
+from einstein.agent import HumanAgent, create_persona
 
 from .fixtures.llm import LLM_PIPELINE
 from .fixtures.task import CONTEXTS, TASKS

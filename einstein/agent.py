@@ -2,10 +2,10 @@ import textwrap
 import time
 import bittensor as bt
 from dataclasses import asdict
-from prompting.tasks import Task
-from prompting.llm import HuggingFaceLLM
-from prompting.cleaners.cleaner import CleanerPipeline
-from prompting.persona import Persona, create_persona
+from einstein.tasks import Task
+from einstein.llm import HuggingFaceLLM
+from einstein.cleaners.cleaner import CleanerPipeline
+from einstein.persona import Persona, create_persona
 from transformers import Pipeline
 
 import warnings

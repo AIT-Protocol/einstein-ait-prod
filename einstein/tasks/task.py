@@ -4,9 +4,9 @@ from abc import ABC
 from dataclasses import dataclass
 from enum import Enum
 from typing import List, Union, Dict
-from prompting.llm import HuggingFaceLLM
+from einstein.llm import HuggingFaceLLM
 from transformers import Pipeline
-from prompting.cleaners.cleaner import CleanerPipeline
+from einstein.cleaners.cleaner import CleanerPipeline
 
 
 class TaskEvaluationType(Enum):

@@ -1,4 +1,4 @@
-from prompting.tasks import Task, MathTask
+from einstein.tasks import Task, MathTask
 from .dataset import MATH_CONTEXT
 
 TASKS = [

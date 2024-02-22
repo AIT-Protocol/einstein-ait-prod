@@ -4,13 +4,13 @@ import numpy as np
 import bittensor as bt
 
 from typing import List
-from prompting.agent import HumanAgent
-from prompting.dendrite import DendriteResponseEvent
-from prompting.conversation import create_task
-from prompting.protocol import PromptingSynapse
-from prompting.rewards import RewardResult
-from prompting.utils.uids import get_random_uids
-from prompting.utils.logging import log_event
+from einstein.agent import HumanAgent
+from einstein.dendrite import DendriteResponseEvent
+from einstein.conversation import create_task
+from einstein.protocol import CoreSynapse
+from einstein.rewards import RewardResult
+from einstein.utils.uids import get_random_uids
+from einstein.utils.logging import log_event
 
 
 async def run_step(
@@ -39,9 +39,9 @@ async def run_step(
 
     axons = [self.metagraph.axons[uid] for uid in uids]
     # Make calls to the network with the prompt.
-    responses: List[PromptingSynapse] = await self.dendrite(
+    responses: List[CoreSynapse] = await self.dendrite(
         axons=axons,
-        synapse=PromptingSynapse(roles=["user"], messages=[agent.challenge]),
+        synapse=CoreSynapse(roles=["user"], messages=[agent.challenge]),
         timeout=timeout,
     )
 
@@ -88,7 +88,9 @@ async def forward(self):
         bt.logging.info(
             f"📋 Selecting task... from {self.config.neuron.tasks} with distribution {self.config.neuron.task_p}"
         )
-        bt.logging.info(f"Tasks: {self.config.neuron.tasks}, Probabilities: {self.config.neuron.task_p}")
+        bt.logging.info(
+            f"Tasks: {self.config.neuron.tasks}, Probabilities: {self.config.neuron.task_p}"
+        )
 
         # Create a specific task
         # task_name = np.random.choice(

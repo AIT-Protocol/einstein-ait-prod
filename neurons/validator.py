@@ -2,10 +2,10 @@ import time
 import torch
 import bittensor as bt
 
-from prompting.forward import forward
-from prompting.llm import load_pipeline
-from prompting.base.validator import BaseValidatorNeuron
-from prompting.rewards import RewardPipeline
+from einstein.forward import forward
+from einstein.llm import load_pipeline
+from einstein.base.validator import BaseValidatorNeuron
+from einstein.rewards import RewardPipeline
 
 class Validator(BaseValidatorNeuron):
 

@@ -2,7 +2,7 @@ import time
 import torch
 from typing import List
 from sympy import simplify, symbols, parse_expr
-from prompting.rewards import BaseRewardModel, BatchRewardOutput
+from einstein.rewards import BaseRewardModel, BatchRewardOutput
 
 class AdvancedMathModel(BaseRewardModel):
     @property
