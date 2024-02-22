@@ -125,28 +125,42 @@ We encourage miners to use testnet as this gives you a risk-free playground befo
 Prior to running a miner or validator, you must [create a wallet](https://github.com/opentensor/docs/blob/main/reference/btcli.md) and [register the wallet to a netuid](https://github.com/opentensor/docs/blob/main/subnetworks/registration.md). Once you have done so, you can run the miner and validator with the following commands.
 
 ```bash
-python neurons/validator.py /
---netuid 78 /
---subtensor.network test /
---neuron.device cuda /
---wallet.name <your validator wallet> /
---wallet.hotkey <your validator hotkey> /
+python neurons/validator.py \
+--netuid 78 \
+--subtensor.network test \
+--neuron.device cuda \
+--wallet.name <your validator wallet> \
+--wallet.hotkey <your validator hotkey> \
 --logging.debug
 
 ```
 
 *NOTE: Your wallet and wallet's hotkey must be created using the bittensor-cli and registered to the netuid 78 (our testnet uid). Additionally, you can run the validator in trace mode by using `--logging.trace` instead of `--logging.debug`*
 
+If you want to run our base openai miners, you must first install the required dependencies by:
+
+```bash
+pip install -r neurons/miners/openai/requirements.txt
+```
+
+Then you will need to have your include your OpenAI API key into .env and you can do so by:
+
+```bash
+echo 'OPENAI_API_KEY=your_api_key_here' >> .env
+```
+
+Now, go ahead and start the miner:
+
 ```bash
 # To run the miner
-python neurons/miners/openai/miner.py /
---netuid 78 /
---subtensor.network test /
---wallet.name <your miner wallet> /
---wallet.hotkey <your miner hotkey> /
---neuron.model_id gpt /
---neuron.max_tokens 1024 /
---neuron.temperature 0.9 /
+python neurons/miners/openai/miner.py \
+--netuid 78 \
+--subtensor.network test \
+--wallet.name <your miner wallet> \
+--wallet.hotkey <your miner hotkey> \
+--neuron.model_id gpt \
+--neuron.max_tokens 1024 \
+--neuron.temperature 0.9 \
 --logging.debug
 ```
 
