@@ -46,6 +46,10 @@ FINE TUNED **MINER** (`WIP`) REQUIREMENTS
 - Python 3.9 or 3.10
 - CUDA 12.0 or higher
 
+**OPENAI MINER** REQUIREMENTS
+
+- Python 3.8, 3.9 or 3.10
+
 # Tools
 
 Currently, the tooling stack includes `mathgenerator`, `OpenAI`, `HuggingFace`, `LangChain`, and `WandB`
@@ -86,7 +90,15 @@ python -m pip install -r requirements.txt && python -m pip install -e .
 
 ---
 
-# Running Validators
+# Running Validators and Miners
+
+*Disclaimer:* We encourage miners to use testnet as this gives you a risk-free playground before running on mainnet. If you require test tao, please reach out to <steffen@opentensor.dev>
+
+Prior to running a miner or validator, you must [create a wallet](https://github.com/opentensor/docs/blob/main/reference/btcli.md) and [register the wallet to a netuid](https://github.com/opentensor/docs/blob/main/subnetworks/registration.md). Once you have done so, you can run the miner and validator with the following commands.
+
+---
+
+## Running Validators
 
 1. Install this repository, you can do so by following the steps outlined in [the installation section](#installation).
 2. Install [Weights and Biases](https://docs.wandb.ai/quickstart) and run `wandb login` within this repository. This will initialize Weights and Biases, enabling you to view KPIs and Metrics on your validator. (Strongly recommended to help the network improve from data sharing)
@@ -109,20 +121,9 @@ python -m pip install -r requirements.txt && python -m pip install -e .
    pm2 start run.sh --name s1_validator_autoupdate -- --wallet.name <your-wallet-name> --wallet.hotkey <your-wallet-hot-key>
    ```
 
----
+   The `run.sh` script will automatically pull the latest updates from the repository and restart the validator. This is useful for keeping your validator up to date with the latest changes.
 
-# Miners
-
-1. AIT PAL  `Work In Progress - Not yet public`
-2. [OpenAI](https://platform.openai.com/docs/introduction) (GPT variants)
-
----
-
-# Running on Testnet
-
-We encourage miners to use testnet as this gives you a risk-free playground before running on mainnet. If you require test tao, please reach out to <steffen@opentensor.dev>
-
-Prior to running a miner or validator, you must [create a wallet](https://github.com/opentensor/docs/blob/main/reference/btcli.md) and [register the wallet to a netuid](https://github.com/opentensor/docs/blob/main/subnetworks/registration.md). Once you have done so, you can run the miner and validator with the following commands.
+5. **Running the Validator:**
 
 ```bash
 python neurons/validator.py \
@@ -132,51 +133,62 @@ python neurons/validator.py \
 --wallet.name <your validator wallet> \
 --wallet.hotkey <your validator hotkey> \
 --logging.debug
-
 ```
 
-*NOTE: Your wallet and wallet's hotkey must be created using the bittensor-cli and registered to the netuid 78 (our testnet uid). Additionally, you can run the validator in trace mode by using `--logging.trace` instead of `--logging.debug`*
+   *NOTE: Your wallet and wallet's hotkey must be created using the bittensor-cli and registered to the netuid 78 (our testnet uid). Additionally, you can run the validator in trace mode by using `--logging.trace` instead of `--logging.debug`*
 
-If you want to run our base openai miners, you must first install the required dependencies by:
+---
 
-```bash
-pip install -r neurons/miners/openai/requirements.txt
-```
+## Running Miners
 
-Then you will need to have your include your OpenAI API key into .env and you can do so by:
+### Base Models
 
-```bash
-echo 'OPENAI_API_KEY=your_api_key_here' >> .env
-```
+   1. AIT Custom API  `Work In Progress - Not yet public`
+   2. [OpenAI](https://platform.openai.com/docs/introduction) (GPT variants)
 
-Now, go ahead and start the miner:
+### OpenAI Miner
 
-```bash
-# To run the miner
-python neurons/miners/openai/miner.py \
---netuid 78 \
---subtensor.network test \
---wallet.name <your miner wallet> \
---wallet.hotkey <your miner hotkey> \
---neuron.model_id gpt \
---neuron.max_tokens 1024 \
---neuron.temperature 0.9 \
---logging.debug
-```
+1. Install the required dependencies by:
 
-*NOTE: Your wallet and wallet's hotkey must be created using the bittensor-cli and registered to the netuid 78 (our testnet uid). Additionally, you can run the validator in trace mode by using `--logging.trace` instead of `--logging.debug`*
+   ```bash
+   pip install -r neurons/miners/openai/requirements.txt
+   ```
 
-*- The `--neuron.model_id` flag is used to specify the model you want to use. The default value is `gpt3.5-turbo`*
+2. Include your OpenAI API key into .env and you can do so by:
 
-*- The `--neuron.max_tokens` flag is used to specify the maximum number of tokens the model can generate. The default value is `256`*
+   ```bash
+   echo 'OPENAI_API_KEY=your_api_key_here' >> .env
+   ```
 
-*- The `--neuron.temperature` flag is used to specify the temperature of the model. The default value is `0.7`*
+3. Start the miner:
+
+   ```bash
+   python neurons/miners/openai/miner.py \
+   --netuid 78 \
+   --subtensor.network test \
+   --wallet.name <your miner wallet> \
+   --wallet.hotkey <your miner hotkey> \
+   --neuron.model_id gpt \
+   --neuron.max_tokens 1024 \
+   --neuron.temperature 0.9 \
+   --logging.debug
+   ```
+
+   *NOTE: Your wallet and wallet's hotkey must be created using the bittensor-cli and registered to the netuid 78 (our testnet uid). Additionally, you can run the validator in trace mode by using `--logging.trace` instead of `--logging.debug`*
+
+   *- The `--neuron.model_id` flag is used to specify the model you want to use. The default value is `gpt3.5-turbo`*
+
+   *- The `--neuron.max_tokens` flag is used to specify the maximum number of tokens the model can generate. The default value is `256`*
+
+   *- The `--neuron.temperature` flag is used to specify the temperature of the model. The default value is `0.7`*
 
 ---
 
 # Real-time monitoring with wandb integration
 
 Check out real-time public logging by looking at the project [here](https://wandb.ai/ait-ai/einstein-ait)
+
+---
 
 ## License
 
@@ -200,3 +212,5 @@ This repository is licensed under the MIT License.
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 ```
+
+---

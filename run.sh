@@ -5,7 +5,7 @@ script="neurons/validator.py"
 autoRunLoc=$(readlink -f "$0")
 proc_name="s1_validator_main_process" 
 args=()
-version_location="./einstein-ait/__init__.py"
+version_location="./einstein/__init__.py"
 version="__version__"
 
 old_args=$@
@@ -229,7 +229,7 @@ if [ "$?" -eq 1 ]; then
         if [ -d "./.git" ]; then
 
             # check value on github remotely
-            latest_version=$(check_variable_value_on_github "LVH-Tony/einstein-ait" "einstein-ait/__init__.py" "__version__ ")
+            latest_version=$(check_variable_value_on_github "ait-protocol/einstein-ait-prod" "einstein/__init__.py" "__version__ ")
 
             # If the file has been updated
             if version_less_than $current_version $latest_version; then
