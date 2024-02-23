@@ -123,8 +123,10 @@ class BatchRewardOutput:
     def __post_init__(self):
         if self.rewards.shape != self.timings.shape:
             raise ValueError(f"rewards.shape {self.rewards.shape} != timings.shape {self.timings.shape}")
-        
-        self.rewards_normalized = (self.rewards-self.rewards.min())/(self.rewards.max()-self.rewards.min()+1e-6)
+        if self.rewards.numel() == 0:
+            self.rewards_normalized = torch.zeros_like(self.rewards)
+        else:
+            self.rewards_normalized = (self.rewards-self.rewards.min())/(self.rewards.max()-self.rewards.min()+1e-6)
 
 
 class BaseRewardModel(ABC):
