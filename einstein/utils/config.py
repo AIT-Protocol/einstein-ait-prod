@@ -222,15 +222,15 @@ def add_miner_args(cls, parser):
     parser.add_argument(
         "--wandb.entity",
         type=str,
-        default="opentensor-dev",
         help="Wandb entity to log to.",
+        default="ait-ai",
     )
 
     parser.add_argument(
         "--wandb.project_name",
         type=str,
-        default="alpha-miners",
         help="Wandb project to log to.",
+        default="einstein-miner",
     )
 
 def add_validator_args(cls, parser):
@@ -330,14 +330,14 @@ def add_validator_args(cls, parser):
         "--wandb.project_name",
         type=str,
         help="The name of the project where you are sending the new run.",
-        default="alpha-validators",
+        default="einstein-validator",
     )
 
     parser.add_argument(
         "--wandb.entity",
         type=str,
         help="The name of the project where you are sending the new run.",
-        default="opentensor-dev",
+        default="ait-ai",
     )
 
 
