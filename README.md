@@ -81,7 +81,7 @@ Tasks contain a **query** (basic question/problem) and a **reference** (ideal an
 This repository requires python3.9 or higher. To install, simply clone this repository and install the requirements.
 
 ```bash
-git clone https://github.com/LVH-Tony/einstein-ait.git && cd einstein-ait
+git clone https://github.com/ait-protocol/einstein-ait-prod.git && cd einstein-ait-prod
 ```
 
 ```bash
