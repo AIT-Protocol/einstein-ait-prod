@@ -12,7 +12,7 @@ This repository contains a Bittensor Miner that uses langchain and OpenAI's mode
 1. Clone the repository
 
 ```bash
-git clone https://github.com/LVH-Tony/einstein-ait.git & cd einstein-ait
+git clone https://github.com/ait-protocol/einstein-ait-prod.git & cd einstein-ait-prod
 ```
 
 2. Install the required packages
