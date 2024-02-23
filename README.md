@@ -8,7 +8,7 @@
 
 ### The Incentivized Internet <!-- omit in toc -->
 
-[Bittensor Discord](https://discord.gg/bittensor) • [AIT Discord](https://discord.gg/aitprotocols) • [AIT Telegram](AIT_Protocol) • [AIT Website](https://ait.tech)
+[Discord]([https://discord.gg/bittensor](https://discord.gg/wVPZrVu9)) • [AIT Discord](https://discord.gg/aitprotocols) • [AIT Telegram](AIT_Protocol)
 
 </div>
 
