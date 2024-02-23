@@ -176,7 +176,7 @@ python neurons/validator.py \
    --subtensor.network test \
    --wallet.name <your miner wallet> \
    --wallet.hotkey <your miner hotkey> \
-   --neuron.model_id gpt \
+   --neuron.model_id gpt-4 \
    --neuron.max_tokens 1024 \
    --neuron.temperature 0.9 \
    --logging.debug
