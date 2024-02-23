@@ -59,11 +59,19 @@ async def run_step(
     )
     bt.logging.info(f"Created RewardResult:\n {reward_result}")
 
-    # The original idea was that the agent is 'satisfied' when it gets a good enough response (e.g. reward critera is met, such as ROUGE>threshold)
+    # The original idea was that the agent is 'satisfied' when it gets a good enough response (e.g. reward critera is met, such as AdvancedMath>threshold)
+    if reward_result.rewards.numel() > 0:
+        top_reward = reward_result.rewards.max()
+        top_response = response_event.completions[reward_result.rewards.argmax()]
+    else:
+        # Provide default values for top_reward and top_response in case of empty tensor
+        top_reward = 0  # Default value, adjust as needed
+        top_response = ""  # Assuming an empty string as a default, adjust based on what makes sense for your application
+
     agent.update_progress(
-        top_reward=reward_result.rewards.max(),
-        top_response=response_event.completions[reward_result.rewards.argmax()],
-    )
+        top_reward=top_reward,
+        top_response=top_response,
+        )
 
     self.update_scores(reward_result.rewards, uids)
 
