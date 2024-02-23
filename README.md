@@ -133,15 +133,15 @@ Prior to running a miner or validator, you must [create a wallet](https://github
 
 5. **Running the Validator:**
 
-```bash
-python neurons/validator.py \
---netuid 78 \
---subtensor.network test \
---neuron.device cuda \
---wallet.name <your validator wallet> \
---wallet.hotkey <your validator hotkey> \
---logging.debug
-```
+  ```bash
+  python neurons/validator.py \
+   --netuid <78/5> \ #78 is our testnet and 5 is our mainnet
+   --subtensor.network <test/finney> \
+  --neuron.device cuda \
+  --wallet.name <your validator wallet> \
+  --wallet.hotkey <your validator hotkey> \
+  --logging.debug
+  ```
 
    *NOTE: Your wallet and wallet's hotkey must be created using the bittensor-cli and registered to the netuid 78 (our testnet uid). Additionally, you can run the validator in trace mode by using `--logging.trace` instead of `--logging.debug`*
 
@@ -172,8 +172,8 @@ python neurons/validator.py \
 
    ```bash
    python neurons/miners/openai/miner.py \
-   --netuid 78 \
-   --subtensor.network test \
+   --netuid <78/5> \ #78 is our testnet and 5 is our mainnet
+   --subtensor.network <test/finney> \
    --wallet.name <your miner wallet> \
    --wallet.hotkey <your miner hotkey> \
    --neuron.model_id gpt-4 \
