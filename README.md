@@ -94,7 +94,7 @@ python -m pip install -r requirements.txt && python -m pip install -e .
 
 *Disclaimer:*
 
-We encourage miners to use testnet as this gives you a risk-free playground before running on mainnet. If you require test tao, please reach out to <steffen@opentensor.dev>
+We encourage miners to use testnet as this gives you a risk-free playground before running on mainnet. If you require test tao, please reach out to our [Subnet 5 Discord](https://discord.gg/wVPZrVu9).
 
 Prior to running a miner or validator, you must [create a wallet](https://github.com/opentensor/docs/blob/main/reference/btcli.md) and [register the wallet to a netuid](https://github.com/opentensor/docs/blob/main/subnetworks/registration.md). Once you have done so, you can run the miner and validator with the following commands.
 
@@ -103,7 +103,7 @@ Prior to running a miner or validator, you must [create a wallet](https://github
    ```bash
    wandb login
    ```
-   
+
 ---
 
 ## Running Validators
@@ -148,6 +148,8 @@ Prior to running a miner or validator, you must [create a wallet](https://github
 ---
 
 ## Running Miners
+
+Running Miners is very competitive and requires a lot of resources. We encourage miners to use testnet as this gives you a risk-free playground before running on mainnet. Due to its competitive nature, we encourage miners to do fine-tuning and optimization before running on mainnet. feel free to also develop your own miner too!
 
 ### Base Models
 
