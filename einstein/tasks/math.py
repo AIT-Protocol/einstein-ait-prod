@@ -32,9 +32,9 @@ class MathTask(Task):
             self.reference_type = 'numeric'
         
         # Improved concatenation using f-string for better readability and performance
-        self.query = f"How can I solve the following problem, {context.problem}?" \
-                    " Make sure to include the whole problem when you ask your question."
-        self.topic = context.topic
-        self.subtopic = context.subtopic
-        # self.tags = context.tags
+        self.query = "How can I solve the following problem, " + context.content + "? Make sure to include the whole problem when you ask your question."
+        self.reference = context.extra['solution']
+        self.topic = context.title
+        self.subtopic = context.topic
+        self.tags = context.tags
 
