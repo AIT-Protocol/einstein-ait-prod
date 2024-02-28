@@ -263,6 +263,8 @@ python neurons/miners/openai/miner.py \
 - <mark>neuron.top_p</mark> {float numbers from 0 to 1} : This is like choosing ideas that together make a good story, instead of just picking the absolute best ones. It helps the text be both interesting and sensible.
   >Default = 0.95
 
+You can add the parsers above to optimize for miners
+
 The output when you run the miner will look something like this:
 ![alt text](image.png)
 ### Congratulations, you have successfully run the miner!
