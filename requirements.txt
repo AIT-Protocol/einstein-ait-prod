@@ -8,7 +8,6 @@ torch==2.1.1
 torchmetrics
 transformers==4.36.2
 pre-commit==3.3.2
-mathgenerator
 numpy==1.22.0
 scipy==1.10.1
 sympy
@@ -16,3 +15,4 @@ sentencepiece
 wandb==0.15.10
 tenacity
 antlr4-python3-runtime==4.11
+git+https://github.com/AIT-Protocol/mathdataset.git@main#egg=mathgenerator
