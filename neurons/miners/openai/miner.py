@@ -52,8 +52,10 @@ class OpenAIMiner(Miner):
             max_tokens=self.config.neuron.max_tokens,
             temperature=self.config.neuron.temperature,
         )
-
-        self.system_prompt = "You are an AI that excels in solving mathematical problems. Always provide responds concisely and helpfully explanations and step-by-step solutions. You are honest about things you don't know."
+        
+        system_prompt = self.config.neuron.system_prompt
+        self.system_prompt = system_prompt
+        
         self.accumulated_total_tokens = 0
         self.accumulated_prompt_tokens = 0
         self.accumulated_completion_tokens = 0
@@ -124,6 +126,8 @@ class OpenAIMiner(Miner):
                     )
 
             bt.logging.debug(f"✅ Served Response: {response}")
+            self.step += 1
+
             return synapse
         except Exception as e:
             bt.logging.error(f"Error in forward: {e}")
