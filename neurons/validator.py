@@ -81,12 +81,12 @@ class Validator(BaseValidatorNeuron):
 if __name__ == "__main__":
     with Validator() as validator:
         while True:
-            bt.logging.info(f"Validator running:: network: {validator.subtensor.network} | \ 
-                            block: {validator.block} | \ 
-                            step: {validator.step} | \ 
-                            uid: {validator.uid} | \ 
-                            last updated: {validator.block-validator.metagraph.last_update[validator.uid]} | \ 
-                            vtrust: {validator.metagraph.validator_trust[validator.uid]:.3f} | \
+            bt.logging.info(f"Validator running:: network: {validator.subtensor.network} | \n\
+                            block: {validator.block} | \n\
+                            step: {validator.step} | \n\
+                            uid: {validator.uid} | \n\
+                            last updated: {validator.block-validator.metagraph.last_update[validator.uid]} | \n\
+                            vtrust: {validator.metagraph.validator_trust[validator.uid]:.3f} | \n\
                             emission {validator.metagraph.emission[validator.uid]:.3f}")
             time.sleep(5)
 
