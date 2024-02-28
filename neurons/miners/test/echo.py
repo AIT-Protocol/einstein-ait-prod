@@ -21,7 +21,7 @@ class EchoMiner(Miner):
     async def forward(self, synapse: CoreSynapse) -> CoreSynapse:
 
         synapse.completion = synapse.messages[-1]
-
+        self.step += 1
         return synapse
 
     async def blacklist(self, synapse: CoreSynapse) -> typing.Tuple[bool, str]:

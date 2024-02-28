@@ -34,7 +34,7 @@ class PhraseMiner(Miner):
     async def forward(self, synapse: CoreSynapse) -> CoreSynapse:
 
         synapse.completion = self.config.neuron.phrase
-
+        self.step += 1
         return synapse
 
     async def blacklist(self, synapse: CoreSynapse) -> typing.Tuple[bool, str]:
