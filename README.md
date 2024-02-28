@@ -135,8 +135,8 @@ Prior to running a miner or validator, you must [create a wallet](https://github
 
   ```bash
   python neurons/validator.py \
-   --netuid < 78 / 5> \ #78 is our testnet and 5 is our mainnet
-   --subtensor.network <test/finney> \
+  --netuid < 78 / 5> \ #78 is our testnet and 5 is our mainnet
+  --subtensor.network <test/finney> \
   --neuron.device cuda \
   --wallet.name <your validator wallet> \
   --wallet.hotkey <your validator hotkey> \
