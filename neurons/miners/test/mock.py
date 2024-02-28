@@ -21,7 +21,7 @@ class MockMiner(Miner):
     async def forward(self, synapse: CoreSynapse) -> CoreSynapse:
 
         synapse.completion = f"Hey you reached mock miner {self.config.wallet.hotkey!r}. Please leave a message after the tone.. Beep!"
-
+        self.step += 1
         return synapse
 
     async def blacklist(self, synapse: CoreSynapse) -> typing.Tuple[bool, str]:
