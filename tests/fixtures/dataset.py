@@ -1,5 +1,5 @@
 
-from einstein.tools.datasets import MockDataset, MathDataset
+from einstein.tools.datasets import MathDataset, MockDataset
 
 DATASETS = [
     MockDataset,
