@@ -81,7 +81,13 @@ class Validator(BaseValidatorNeuron):
 if __name__ == "__main__":
     with Validator() as validator:
         while True:
-            bt.logging.info("Validator running...", time.time())
+            bt.logging.info(f"Validator running:: network: {validator.subtensor.network} | \ 
+                            block: {validator.block} | \ 
+                            step: {validator.step} | \ 
+                            uid: {validator.uid} | \ 
+                            last updated: {validator.block-validator.metagraph.last_update[validator.uid]} | \ 
+                            vtrust: {validator.metagraph.validator_trust[validator.uid]:.3f} | \
+                            emission {validator.metagraph.emission[validator.uid]:.3f}")
             time.sleep(5)
 
             if validator.should_exit:
