@@ -1,7 +1,7 @@
 import time
 import random
 import itertools
-import mathgenerator
+import mathgenerator as mg
 import bittensor as bt
 from sympy.parsing.latex import parse_latex
 from typing import Dict, Union, List, Tuple
@@ -11,7 +11,7 @@ from .base import Dataset
 from ..selector import Selector
 
 class MathDataset(Dataset):
-    topics_list = mathgenerator.getGenList()
+    topics_list = mg.getGenList()
 
     def __init__(self, seed=None):
 
@@ -31,7 +31,7 @@ class MathDataset(Dataset):
             Dict: _description_
         """
         bt.logging.info(f"Getting math problem {name!r}")
-        info = mathgenerator.generate_context(name, **kwargs)
+        info = mg.generate_context(name, **kwargs)
         if info['reward_type'] != 'float':
             return None
 
@@ -52,7 +52,7 @@ class MathDataset(Dataset):
             'internal_links': [info['topic'], info['subtopic']], # internal links
             'external_links': external_links,
             "tags": info['forward_words'],
-            'source': 'Mathgenerator',
+            'source': 'AIT Math Dataset',
             'extra': {'reward_type': info['reward_type'], 'solution': info['solution']}
         }
 
