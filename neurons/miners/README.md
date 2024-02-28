@@ -81,7 +81,7 @@ git clone https://github.com/AIT-Protocol/einstein-ait-prod
 ```
 Access the Einstein-Subnet Directory
 ```
-cd Compute-Subnet
+cd einstein-ait-prod
 ```
 ## 5. EINSTEIN SUBNET DEPENDENCIES
 > For optimal functionality of the Compute Subnet, it's essential to install the appropriate graphics drivers and dependencies.<br>
@@ -89,7 +89,11 @@ cd Compute-Subnet
 ### Required dependencies for miners:
 ```
 python -m pip install -r requirements.txt && python -m pip install -e .
+```
+```
 pip install -r neurons/miners/openai/requirements.txt
+```
+```
 echo 'OPENAI_API_KEY=your_api_key_here' >> .env
 ```
 > You can access [https://platform.openai.com/api-keys](https://platform.openai.com/api-keys) to create new api key (Secret Key) <br>
@@ -156,32 +160,26 @@ The output of which should look something like:
 +---------------------------------------------------------------------------------------+
 ```
 ### Install the NVIDIA CUDA Toolkit
-
-#### Base Installer
-
 ```
-wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-ubuntu2204.pin
+wget https://developer.download.nvidia.com/compute/cuda/12.3.1/local_installers/cuda-repo-ubuntu2204-12-3-local_12.3.1-545.23.08-1_amd64.deb
 ```
 ```
-sudo mv cuda-ubuntu2204.pin /etc/apt/preferences.d/cuda-repository-pin-600
+sudo dpkg -i cuda-repo-ubuntu2204-12-3-local_12.3.1-545.23.08-1_amd64.deb
 ```
 ```
-wget https://developer.download.nvidia.com/compute/cuda/12.2.0/local_installers/cuda-repo-ubuntu2204-12-2-local_12.2.0-535.54.03-1_amd64.deb
-```
-```
-sudo dpkg -i cuda-repo-ubuntu2204-12-2-local_12.2.0-535.54.03-1_amd64.deb
-```
-```
-sudo cp /var/cuda-repo-ubuntu2204-12-2-local/cuda-*-keyring.gpg /usr/share/keyrings/
+sudo cp /var/cuda-repo-ubuntu2204-12-3-local/cuda-*-keyring.gpg /usr/share/keyrings/
 ```
 ```
 sudo apt-get update
 ```
 ```
-sudo apt-get -y install cuda
+sudo apt-get -y install cuda-toolkit-12-3
 ```
 ```
-export CUDA_VERSION=cuda-12.2
+sudo apt-get -y install -y cuda-drivers
+```
+```
+export CUDA_VERSION=cuda-12.3
 export PATH=$PATH:/usr/local/$CUDA_VERSION/bin
 export LD_LIBRARY_PATH=/usr/local/$CUDA_VERSION/lib64
 ```
@@ -190,84 +188,64 @@ echo "">>~/.bashrc
 echo "PATH=$PATH">>~/.bashrc
 echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH">>~/.bashrc
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-**Start the miner:**
+The output of which should look something like:
+```
+nvcc: NVIDIA (R) Cuda compiler driver
+Copyright (c) 2005-2023 NVIDIA Corporation
+Built on Fri_Nov__3_17:16:49_PDT_2023
+Cuda compilation tools, release 12.3, V12.3.103
+Build cuda_12.3.r12.3/compiler.33492891_0
+```
+You can refer to the Cuda installation documentation [here](https://developer.nvidia.com/cuda-12-3-1-download-archive?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=22.04&target_type=deb_local)
+## 6. SETTING UP A MINER 
+### Hotkey Registration
+At this point, you will need some $TAO in your coldkey address for miner registration. Once your coldkey is funded, run the command below to register your hotkey:
+#### Testnet
+- subtensor.network: test
+- netuid: 78
+```
+btcli s register --subtensor.network test --netuid 78 
+```
+#### Mainnet
+- subtensor.network: finney
+- netuid: 5
+```
+btcli s register --subtensor.network finney --netuid 5 
+```
+> When running this command, you must enter the wallet name and hotkey name that we instructed in step 2.2
+
+> You should test on testnet before running on mainnet
+
+### Start the miner:
+Move to the einstein-ait-prod directory and run the following command:
+#### Testnet:
 ```
 python neurons/miners/openai/miner.py \
---netuid <78 / 5> \ #78 is our testnet and 5 is our mainnet
---subtensor.network <test/finney> \
---wallet.name <your miner wallet> \
---wallet.hotkey <your miner hotkey> \
+--netuid 78 
+--subtensor.network test \
+--wallet.name <your miner wallet name> \
+--wallet.hotkey <your miner hotkey name> \
 --neuron.model_id gpt-4 \
 --neuron.max_tokens 1024 \
 --neuron.temperature 0.9 \
 --logging.debug
 ```
->NOTE: Your wallet and wallet's hotkey must be created using the bittensor-cli and registered to the netuid 78 (our testnet uid). Additionally, you can run the validator in trace mode by using --logging.trace instead of --logging.debug
->- The <mark>--neuron.model_id</mark> flag is used to specify the model you want to use. The default value is gpt3.5-turbo
->- The <mark>--neuron.max_tokens</mark>  flag is used to specify the maximum number of tokens the model can generate. The default value is 256
->- The <mark>--neuron.temperature</mark> flag is used to specify the temperature of the model. The default value is 0.7
+#### Mainnet:
+```
+python neurons/miners/openai/miner.py \
+--netuid 5
+--subtensor.network finney \
+--wallet.name <your miner wallet name> \
+--wallet.hotkey <your miner hotkey name> \
+--neuron.model_id gpt-4 \
+--neuron.max_tokens 1024 \
+--neuron.temperature 0.9 \
+--logging.debug
+```
+- The <mark>--neuron.model_id</mark> flag is used to specify the model you want to use. The default value is gpt3.5-turbo
+- The <mark>--neuron.max_tokens</mark>  flag is used to specify the maximum number of tokens the model can generate. The default value is 256
+- The <mark>--neuron.temperature</mark> flag is used to specify the temperature of the model. The default value is 0.7
 
+The output when you run the miner will look something like this:
+![alt text](image.png)
+### Congratulations, you have successfully run the miner!
