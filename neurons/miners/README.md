@@ -188,6 +188,9 @@ echo "">>~/.bashrc
 echo "PATH=$PATH">>~/.bashrc
 echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH">>~/.bashrc
 ```
+```
+nvcc --version
+```
 The output of which should look something like:
 ```
 nvcc: NVIDIA (R) Cuda compiler driver
