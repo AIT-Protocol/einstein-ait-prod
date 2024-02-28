@@ -198,6 +198,7 @@ Build cuda_12.3.r12.3/compiler.33492891_0
 ```
 You can refer to the Cuda installation documentation [here](https://developer.nvidia.com/cuda-12-3-1-download-archive?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=22.04&target_type=deb_local)
 ## 6. SETTING UP A MINER 
+> We encourage miners to use testnet as this gives you a risk-free playground before running on mainnet. If you require test tao, please reach out to our [Subnet 5 Discord](https://discord.gg/wVPZrVu9).
 ### Hotkey Registration
 At this point, you will need some $TAO in your coldkey address for miner registration. Once your coldkey is funded, run the command below to register your hotkey:
 #### Testnet
@@ -214,7 +215,7 @@ btcli s register --subtensor.network finney --netuid 5
 ```
 > When running this command, you must enter the wallet name and hotkey name that we instructed in step 2.2
 
-> You should test on testnet before running on mainnet
+
 
 ### Start the miner:
 Move to the einstein-ait-prod directory and run the following command:
@@ -242,9 +243,22 @@ python neurons/miners/openai/miner.py \
 --neuron.temperature 0.9 \
 --logging.debug
 ```
-- The <mark>--neuron.model_id</mark> flag is used to specify the model you want to use. The default value is gpt3.5-turbo
-- The <mark>--neuron.max_tokens</mark>  flag is used to specify the maximum number of tokens the model can generate. The default value is 256
-- The <mark>--neuron.temperature</mark> flag is used to specify the temperature of the model. The default value is 0.7
+- <mark>neuron.model_id</mark>: is used to specify the model you want to use. 
+  >Default = gpt3.5-turbo
+- <mark>neuron.system_prompt</mark>: prompt engineering, replace the place to change the model's personas, how they response, custom knowledge,...etc.    
+  >Default = "You are an AI that excels in solving mathematical problems. Always provide responds concisely and helpfully explanations and step-by-step solutions. You are honest about things you don't know."
+
+- <mark>neuron.max_tokens</mark>: the max number you can input here is depend on the model provider, so in our case, check openai model page. max_tokens refers to the maximum number of pieces of text the model can consider at one time. Think of it as limiting how much the model can "read" or "write" in one go. This helps manage the model's memory and ensures it runs smoothly.
+  >Default = 256
+
+- <mark>neuron.temperature</mark> {float numbers from 0 to 1}: Adjusts the creativity, how predictable or surprising the responses are. A lower temperature makes the model's responses more predictable and conservative, while a higher temperature encourages more creativity and diversity.
+  >Default = 0.7
+
+- <mark>neuron.top_k</mark> {0 means off so any number higher than 0}: It's like having a lot of ideas but only picking the few best ones to talk about. This makes the text make more sense.  Reducing the number ensures that the model's choices are among the most probable, leading to more coherent text.
+  >Default = 50
+
+- <mark>neuron.top_p</mark> {float numbers from 0 to 1} : This is like choosing ideas that together make a good story, instead of just picking the absolute best ones. It helps the text be both interesting and sensible.
+  >Default = 0.95
 
 The output when you run the miner will look something like this:
 ![alt text](image.png)
