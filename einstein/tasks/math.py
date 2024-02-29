@@ -12,8 +12,7 @@ class MathTask(Task):
     
     reward_definition = [
         # Dynamically assign reward models based on problem complexity
-        dict(name='float_diff', weight=0.6),
-        dict(name='advanced_math', weight=0.4),
+        dict(name='advanced_math', weight=1.0),
     ]
     penalty_definition = []
     
