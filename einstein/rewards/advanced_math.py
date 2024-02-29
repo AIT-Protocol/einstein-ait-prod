@@ -1,36 +1,66 @@
 import time
 import torch
 from typing import List
-from sympy import simplify, symbols, parse_expr
-from einstein.rewards import BaseRewardModel, BatchRewardOutput
+from sympy.parsing.sympy_parser import parse_expr
+from einstein.rewards import BaseRewardModel, BatchRewardOutput, RewardModelTypeEnum
+
 
 class AdvancedMathModel(BaseRewardModel):
     @property
     def name(self) -> str:
-        return 'advanced_math'
-    
+        return "advanced_math"
+
     def __init__(self, **kwargs):
         super().__init__()
 
     @staticmethod
-    def compare_expressions(ref_expr, user_expr):
-        # Attempt to parse and simplify both expressions for comparison
-        try:
-            ref_simplified = simplify(parse_expr(ref_expr))
-            user_simplified = simplify(parse_expr(user_expr))
-            return ref_simplified.equals(user_simplified)
-        except Exception as e:
-            print(f"Error parsing expressions: {e}")
-            return False
+    def extract_number(text: str) -> float:
+        words = text.split()
+        for word in reversed(words):
+            cleaned = word.strip('.').replace(',', '')
+            try:
+                return float(parse_expr(cleaned).evalf())
+            except Exception:
+                try:
+                    return float(cleaned)
+                except Exception:
+                    continue
 
-    def math_score(self, reference, completion):
-        if self.compare_expressions(reference, completion):
-            return 1.0
-        else:
-            # Further enhancements could include partial scoring based on similarity or closeness of expressions
+    @staticmethod
+    def math_score(reference: str, completion: str) -> float:
+        """Compute a score based on the difference between a reference and a completion.
+
+        Args:
+            reference (str): The reference value.
+            completion (str): The completion value.
+
+        Returns:
+            float: A score between 0 and 1, where 1 means the completion is correct.
+        """
+        reference = float(reference)
+        pred = AdvancedMathModel.extract_number(completion)
+        if pred is None:
             return 0.0
 
+        try:
+            if pred == reference:
+                return 1.0
+
+            diff = (reference - pred) / (reference + 1e-10)
+            
+            # Make sure the difference is between 0 and 1
+            diff = min(abs(diff), 1)
+            
+            # Clip any very small scores
+            if diff > 0.999:
+                diff = 1.0
+            return 1.0 - diff
+        except Exception:
+            return 0.0
+
+
     def reward(self, reference: str, completions: List[str]) -> BatchRewardOutput:
+        """Compute difference scores given a completion and reference pair."""
         rewards = []
         timings = []
 
@@ -40,8 +70,11 @@ class AdvancedMathModel(BaseRewardModel):
             timings.append(time.time() - t0)
             rewards.append(reward)
 
-        return BatchRewardOutput(
+        output = BatchRewardOutput(
             rewards=torch.FloatTensor(rewards),
             timings=torch.FloatTensor(timings),
-            extra_info={'type': 'math'},
+            extra_info={
+                "type": "math",
+            },
         )
+        return output

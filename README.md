@@ -126,7 +126,7 @@ Prior to running a miner or validator, you must [create a wallet](https://github
 4. Run the `run.sh` script which will handle running your validator and pulling the latest updates as they are issued.
 
    ```bash
-   pm2 start run.sh --name s1_validator_autoupdate -- --wallet.name <your-wallet-name> --wallet.hotkey <your-wallet-hot-key>
+   pm2 start run.sh --name s5_validator_autoupdate -- --wallet.name <your-wallet-name> --wallet.hotkey <your-wallet-hot-key>
    ```
 
    The `run.sh` script will automatically pull the latest updates from the repository and restart the validator. This is useful for keeping your validator up to date with the latest changes.
