@@ -31,7 +31,7 @@ def test_mock_subtensor(netuid, n, wallet):
 
 @pytest.mark.parametrize('n', [16, 32, 64])
 def test_mock_metagraph(n):
-    mock_subtensor = MockSubtensor(netuid=1, n=n)
+    mock_subtensor = MockSubtensor(netuid=5, n=n)
     mock_metagraph = MockMetagraph(subtensor=mock_subtensor)
     # Check axons
     axons = mock_metagraph.axons
@@ -57,7 +57,7 @@ def test_mock_dendrite_timings(timeout, min_time, max_time, n):
     mock_dendrite = MockDendrite(mock_wallet)
     mock_dendrite.min_time = min_time
     mock_dendrite.max_time = max_time
-    mock_subtensor = MockSubtensor(netuid=1, n=n)
+    mock_subtensor = MockSubtensor(netuid=5, n=n)
     mock_metagraph = MockMetagraph(subtensor=mock_subtensor)
     axons = mock_metagraph.axons
 

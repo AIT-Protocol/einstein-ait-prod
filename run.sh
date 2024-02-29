@@ -3,7 +3,7 @@
 # Initialize variables
 script="neurons/validator.py"
 autoRunLoc=$(readlink -f "$0")
-proc_name="s1_validator_main_process" 
+proc_name="VALIDATOR" 
 args=()
 version_location="./einstein/__init__.py"
 version="__version__"

@@ -110,7 +110,7 @@ class MockMetagraph(bt.metagraph):
     default_ip = "127.0.0.0"
     default_port = 8091
 
-    def __init__(self, netuid=1, network="mock", subtensor=None):
+    def __init__(self, netuid=5, network="mock", subtensor=None):
         super().__init__(
             netuid=netuid, network=network, sync=False
         )
