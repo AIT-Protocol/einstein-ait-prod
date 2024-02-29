@@ -88,6 +88,19 @@ git clone https://github.com/ait-protocol/einstein-ait-prod.git && cd einstein-a
 python -m pip install -r requirements.txt && python -m pip install -e .
 ```
 
+Install [PM2](https://pm2.io/docs/runtime/guide/installation/) and the [`jq` package](https://jqlang.github.io/jq/) on your system.
+
+   **- On Linux**:
+  
+   ```bash
+   sudo apt update && sudo apt install jq && sudo apt install npm && sudo npm install pm2 -g && pm2 update
+   ```
+  
+   **- On Mac OS**
+  
+   ```bash
+   brew update && brew install jq && brew install npm && sudo npm install pm2 -g && pm2 update
+   ```
 ---
 
 # 🏃 Running Validators and Miners
@@ -110,20 +123,7 @@ Prior to running a miner or validator, you must [create a wallet](https://github
 
 1. Install this repository, you can do so by following the steps outlined in [the installation section](#installation).
 2. Install [Weights and Biases](https://docs.wandb.ai/quickstart) and run `wandb login` within this repository. This will initialize Weights and Biases, enabling you to view KPIs and Metrics on your validator. (Strongly recommended to help the network improve from data sharing)
-3. Install [PM2](https://pm2.io/docs/runtime/guide/installation/) and the [`jq` package](https://jqlang.github.io/jq/) on your system.
-   **On Linux**:
-
-   ```bash
-   sudo apt update && sudo apt install jq && sudo apt install npm && sudo npm install pm2 -g && pm2 update
-   ```
-
-   **On Mac OS**
-
-   ```bash
-   brew update && brew install jq && brew install npm && sudo npm install pm2 -g && pm2 update
-   ```
-
-4. Run the `run.sh` script which will handle running your validator and pulling the latest updates as they are issued.
+3. Run the `run.sh` script which will handle running your validator and pulling the latest updates as they are issued.
 
    ```bash
    pm2 start run.sh --name s5_validator_autoupdate -- --wallet.name <your-wallet-name> --wallet.hotkey <your-wallet-hot-key>
@@ -139,7 +139,7 @@ Prior to running a miner or validator, you must [create a wallet](https://github
    pm2 stop {process_id} # This will stop the process
    ```
 
-5. **OPTIONAL if you are not running by pm2:**
+4. **OPTIONAL if you are not running by pm2:**
 
    ```bash
    python neurons/validator.py \
