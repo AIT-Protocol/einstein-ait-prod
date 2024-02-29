@@ -8,9 +8,9 @@ torch==2.1.1
 torchmetrics
 transformers==4.36.2
 pre-commit==3.3.2
-numpy==1.26.4
-scipy==1.12.0
-sympy==1.12
+numpy==1.22.0
+scipy==1.10.1
+sympy
 sentencepiece
 wandb==0.15.10
 tenacity
