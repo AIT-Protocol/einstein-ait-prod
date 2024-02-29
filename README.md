@@ -210,7 +210,7 @@ Running Miners is very competitive and requires a lot of resources. We encourage
 
    *- The `--neuron.top_k` It's like having a lot of ideas but only picking the few best ones to talk about. This makes the text make more sense.  Reducing the number ensures that the model's choices are among the most probable, leading to more coherent text. The default value is `50`*
 
-   *- The `--neuron.system_prompt` flag is used to specify the prompt for the model. The default value is `"You are an AI that excels in solving mathematical problems. Always provide responds concisely and helpfully explanations and step-by-step solutions. You are honest about things you don't know."`*
+   *- The `--neuron.system_prompt` flag is used to specify the prompt for the model. The default value is `"YYou are an AI that excels in solving mathematical problems. Always provide responses concisely and provide helpful explanations through step-by-step solutions. You are honest about things you don't know."`*
 
    Some useful pm2 commands:
 
