@@ -1,6 +1,6 @@
 import pytest
 from datetime import datetime
-from einstein.rewards import FloatDiffModel, RewardPipeline, AdvancedMathModel
+from einstein.rewards import RewardPipeline, AdvancedMathModel
 
 date1 = datetime.strptime('2022-01-01','%Y-%m-%d')
 date2 = datetime.strptime('2022-01-03','%Y-%m-%d')
@@ -24,7 +24,7 @@ reference = ['0.5']*len(completion)
 @pytest.mark.parametrize('reference', reference)
 @pytest.mark.parametrize('completion, expected_result', zip(completion, expected_result))
 def test_math_score_expression_parsing(reference, completion, expected_result):
-    score = FloatDiffModel().math_score(reference, completion)
+    score = AdvancedMathModel().math_score(reference, completion)
     assert score == expected_result
 
 completion = ['1e3', '-1e3', '1e-3', '-1e-3']
@@ -33,7 +33,7 @@ reference = ['1000']*len(completion)
 @pytest.mark.parametrize('reference', reference)
 @pytest.mark.parametrize('completion, expected_result', zip(completion, expected_result))
 def test_math_score_expression_parsing_with_exponents(reference, completion, expected_result):
-    score = FloatDiffModel().math_score(reference, completion)
+    score = AdvancedMathModel().math_score(reference, completion)
     assert score == expected_result
 
 completion = ['1.0.', '1.0', '1.0.0', '1,', '0 1']
@@ -42,7 +42,7 @@ reference = ['1.0']*len(completion)
 @pytest.mark.parametrize('reference', reference)
 @pytest.mark.parametrize('completion, expected_result', zip(completion, expected_result))
 def test_math_score_expression_parsing_with_punctuation(reference, completion, expected_result):
-    score = FloatDiffModel().math_score(reference, completion)
+    score = AdvancedMathModel().math_score(reference, completion)
     assert score == expected_result
 
 completion = ['-20', '-23', '23', '20', '1000', '2*10+3']
@@ -51,7 +51,7 @@ reference = ['23']*len(completion)
 @pytest.mark.parametrize('reference', reference)
 @pytest.mark.parametrize('completion, expected_result', zip(completion, expected_result))
 def test_math_score_expression_parsing_with_negative_numbers(reference, completion, expected_result):
-    score = FloatDiffModel().math_score(reference, completion)
+    score = AdvancedMathModel().math_score(reference, completion)
     assert score == expected_result
 
 completion = ['0', '0.001', '-0.0', '-0.001', '0.0001']
@@ -60,6 +60,6 @@ reference = ['0']*len(completion)
 @pytest.mark.parametrize('reference', reference)
 @pytest.mark.parametrize('completion, expected_result', zip(completion, expected_result))
 def test_math_score_expression_parsing_with_zeros(reference, completion, expected_result):
-    score = FloatDiffModel().math_score(reference, completion)
+    score = AdvancedMathModel().math_score(reference, completion)
     assert score == expected_result
     

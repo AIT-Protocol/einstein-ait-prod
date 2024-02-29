@@ -3,12 +3,10 @@ from typing import List
 from einstein.tasks import TASKS
 
 from einstein.rewards import BaseRewardModel
-from einstein.rewards.float_diff import FloatDiffModel
 from einstein.rewards.advanced_math import AdvancedMathModel
 
 
 REWARD_MODELS = {
-    'float_diff': FloatDiffModel,
     'advanced_math': AdvancedMathModel,
 }
 
