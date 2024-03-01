@@ -174,7 +174,7 @@ def add_miner_args(cls, parser):
         "--neuron.system_prompt",
         type=str,
         help="The system prompt to use for the miner.",
-        default="You are an AI that excels in solving mathematical problems. Always provide responds concisely and helpfully explanations and step-by-step solutions. You are honest about things you don't know.",
+        default="You are an AI that excels in solving mathematical problems. Always provide responses concisely and provide helpful explanations through step-by-step solutions. You are honest about things you don't know.",
     )
 
     parser.add_argument(
