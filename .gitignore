@@ -163,4 +163,6 @@ testing/
 core
 app.config.js
 wandb
-.vscode
+.vscode.DS_Store
+DS_Store
+.DS_Store
