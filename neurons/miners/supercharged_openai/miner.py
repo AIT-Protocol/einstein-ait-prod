@@ -11,11 +11,18 @@ from einstein.protocol import CoreSynapse
 from neurons.miner import Miner
 
 from langchain.prompts import ChatPromptTemplate
-from langchain_core.output_parsers import StrOutputParser
-# from langchain_openai import ChatOpenAI
+from langchain_openai import ChatOpenAI
 from langchain_community.callbacks import get_openai_callback
-from langchain_community.chat_models import ChatOpenAI
 from dotenv import load_dotenv, find_dotenv
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.messages import SystemMessage, HumanMessage
+
+# Supercharger:
+from neurons.miners.tools.num_pal.base import NumPAL
+import dotenv
+
+dotenv.load_dotenv()
+
 
 import warnings
 
@@ -56,8 +63,6 @@ class OpenAIMiner(Miner):
             top_k = self.config.neuron.top_k,
         )
         
-        system_prompt = self.config.neuron.system_prompt
-        self.system_prompt = system_prompt
         
         self.accumulated_total_tokens = 0
         self.accumulated_prompt_tokens = 0
@@ -87,48 +92,46 @@ class OpenAIMiner(Miner):
         }
 
     async def forward(self, synapse: CoreSynapse) -> CoreSynapse:
-        """
-        Processes the incoming synapse by performing a predefined operation on the input data.
-        This method should be replaced with actual logic relevant to the miner's purpose.
-
-        Args:
-            synapse (CoreSynapse): The synapse object containing the 'dummy_input' data.
-
-        Returns:
-            CoreSynapse: The synapse object with the 'dummy_output' field set to twice the 'dummy_input' value.
-
-        The 'forward' function is a placeholder and should be overridden with logic that is appropriate for
-        the miner's intended operation. This method demonstrates a basic transformation of input data.
-        """
         try:
             with get_openai_callback() as cb:
                 t0 = time.time()
                 bt.logging.debug(f"📧 Message received, forwarding synapse: {synapse}")
 
-                prompt = ChatPromptTemplate.from_messages(
-                    [("system", self.system_prompt), ("user", "{input}")]
-                )
-                chain = prompt | self.model | StrOutputParser()
+                math_question = synapse.messages[-1]
 
-                role = synapse.roles[-1]
-                message = synapse.messages[-1]
+                # Initialize NumPAL and solve the math problem
+                bt.logging.debug(f"💬 Querying to NumPAL:")
+                pal = NumPAL.from_math_prompt(self.model, verbose=True)
+                q_r = pal.invoke(math_question)
 
-                bt.logging.debug(f"💬 Querying openai: {prompt}")
-                response = chain.invoke({"role": role, "input": message})
+                # Prepare messages for generating an explanation
+                prompt = "You are a Math AI solver and the user just asked you a question. You will be given a question (which the user asked before) and the result that already calculated. Use these as reference and generate a concise explanation and answer to the user:"
+                
+                messages = [
+                    SystemMessage(
+                        content=prompt
+                    ),
+                    HumanMessage(
+                        content=str(q_r)
+                    ),
+                ]
 
-                synapse.completion = response
+                # Use another instance of ChatOpenAI if needed, or adjust according to your setup
+                response_content = self.model.invoke(messages).content
+
+                synapse.completion = response_content
                 synapse_latency = time.time() - t0
 
                 if self.config.wandb.on:
                     self.log_event(
                         timing=synapse_latency,
-                        prompt=message,
-                        completion=response,
+                        prompt=math_question,
+                        completion=response_content,
                         system_prompt=self.system_prompt,
                         extra_info=self.get_cost_logging(cb),
                     )
 
-            bt.logging.debug(f"\033[1;32m✅ Served Response: \033[0m {response}")
+            bt.logging.debug(f"\033[1;32m✅ Served Response: \033[0m {response_content}")
             self.step += 1
 
             return synapse
