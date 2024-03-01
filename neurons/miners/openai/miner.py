@@ -12,8 +12,9 @@ from neurons.miner import Miner
 
 from langchain.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
-from langchain_openai import ChatOpenAI
-from langchain.callbacks import get_openai_callback
+# from langchain_openai import ChatOpenAI
+from langchain_community.callbacks import get_openai_callback
+from langchain_community.chat_models import ChatOpenAI
 from dotenv import load_dotenv, find_dotenv
 
 import warnings
