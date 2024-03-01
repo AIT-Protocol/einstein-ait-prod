@@ -14,6 +14,8 @@ class BaseMinerNeuron(BaseNeuron):
     Base class for Bittensor miners.
     """
 
+    neuron_type: str = "MinerNeuron"
+    
     @classmethod
     def add_args(cls, parser: argparse.ArgumentParser):
         super().add_args(parser)
@@ -166,6 +168,9 @@ class BaseMinerNeuron(BaseNeuron):
         """
         self.stop_run_thread()
 
+    def set_weights(self):
+        pass
+    
     def resync_metagraph(self):
         """Resyncs the metagraph and updates the hotkeys and moving averages based on the new metagraph."""
         bt.logging.info("Resyncing the metagraph and updating the hotkeys and moving averages based on the new metagraph.")
