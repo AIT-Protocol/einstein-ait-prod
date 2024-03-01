@@ -170,7 +170,7 @@ class Miner(BaseMinerNeuron):
 
     def log_status(self):
         m = self.metagraph
-        bt.logging.info(f"Miner running:: network: {self.subtensor.network} | block: {self.block} | step: {self.step} | uid: {self.uid} | last updated: {self.block-m.last_update[self.uid]} | trust: {m.trust[self.uid]:.3f} | emission {m.emission[self.uid]:.3f}")
+        bt.logging.info(f"Miner running:: network: {self.subtensor.network} at Subnet {self.config.netuid} | step: {self.step} | miner_uid: {self.uid} | trust: {m.trust[self.uid]:.3f} | emission {m.emission[self.uid]:.3f}")
 
 
 # This is the main function, which runs the miner.
