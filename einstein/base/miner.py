@@ -14,6 +14,8 @@ class BaseMinerNeuron(BaseNeuron):
     Base class for Bittensor miners.
     """
 
+    neuron_type: str = "MinerNeuron"
+    
     @classmethod
     def add_args(cls, parser: argparse.ArgumentParser):
         super().add_args(parser)
@@ -167,38 +169,15 @@ class BaseMinerNeuron(BaseNeuron):
         self.stop_run_thread()
 
     def set_weights(self):
-        """
-        Self-assigns a weight of 1 to the current miner (identified by its UID) and
-        a weight of 0 to all other peers in the network. The weights determine the trust level the miner assigns to other nodes on the network.
-
-        Raises:
-            Exception: If there's an error while setting weights, the exception is logged for diagnosis.
-        """
-        try:
-            # --- query the chain for the most current number of peers on the network
-            chain_weights = torch.zeros(
-                self.subtensor.subnetwork_n(netuid=self.metagraph.netuid)
-            )
-            chain_weights[self.uid] = 1
-
-            # --- Set weights.
-            self.subtensor.set_weights(
-                wallet=self.wallet,
-                netuid=self.metagraph.netuid,
-                uids=torch.arange(0, len(chain_weights)),
-                weights=chain_weights.to("cpu"),
-                wait_for_inclusion=False,
-                version_key=self.spec_version,
-            )
-
-        except Exception as e:
-            bt.logging.error(f"Failed to set weights on chain with exception: { e }")
-
-        bt.logging.info(f"Set weights: {chain_weights}")
-
+        pass
+    
     def resync_metagraph(self):
         """Resyncs the metagraph and updates the hotkeys and moving averages based on the new metagraph."""
-        bt.logging.info("resync_metagraph()")
+        bt.logging.info("Resyncing the metagraph and updating the hotkeys and moving averages based on the new metagraph.")
+        bt.logging.info(f"Current block: {self.block}")
+        bt.logging.info(f"Last metagraph update for neuron {self.uid}: {self.metagraph.last_update[self.uid]}")
+        bt.logging.info(f"Epoch length: {self.config.neuron.epoch_length}")
+        bt.logging.info("Waiting for the next epoch to resync the metagraph.")
 
         # Sync the metagraph.
         self.metagraph.sync(subtensor=self.subtensor)

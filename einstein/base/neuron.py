@@ -19,6 +19,8 @@ class BaseNeuron(ABC):
 
     In addition to creating a wallet, subtensor, and metagraph, this class also handles the synchronization of the network state via a basic checkpointing mechanism based on epoch length.
     """
+    
+    neuron_type: str = "BaseNeuron"
 
     @classmethod
     def check_config(cls, config: "bt.Config"):
@@ -85,10 +87,12 @@ class BaseNeuron(ABC):
         self.step = 0
 
     @abstractmethod
-    async def forward(self, synapse: bt.Synapse) -> bt.Synapse: ...
+    async def forward(self, synapse: bt.Synapse) -> bt.Synapse:
+        ...
 
     @abstractmethod
-    def run(self): ...
+    def run(self):
+        ...
 
     def sync(self):
         """
@@ -123,8 +127,10 @@ class BaseNeuron(ABC):
         Check if enough epoch blocks have elapsed since the last checkpoint to sync.
         """
         return (
-            self.block - self.metagraph.last_update[self.uid]
-        ) > self.config.neuron.epoch_length
+            (self.block - self.metagraph.last_update[self.uid])
+            > self.config.neuron.epoch_length
+            and self.neuron_type != "MinerNeuron"
+        )  # don't set weights if you're a miner
 
     def should_set_weights(self) -> bool:
         # Don't set weights on initialization.
@@ -133,6 +139,9 @@ class BaseNeuron(ABC):
 
         # Check if enough epoch blocks have elapsed since the last epoch.
         if self.config.neuron.disable_set_weights:
+            return False
+
+        if not self.metagraph.validator_permit[self.uid]:
             return False
 
         # Define appropriate logic for when set weights.

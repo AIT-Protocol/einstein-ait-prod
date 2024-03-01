@@ -12,9 +12,10 @@ from neurons.miner import Miner
 
 from langchain.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
-from langchain.chat_models import ChatOpenAI
+# from langchain_openai import ChatOpenAI
+from langchain_community.callbacks import get_openai_callback
+from langchain_community.chat_models import ChatOpenAI
 from dotenv import load_dotenv, find_dotenv
-from langchain.callbacks import get_openai_callback
 
 import warnings
 
@@ -125,7 +126,7 @@ class OpenAIMiner(Miner):
                         extra_info=self.get_cost_logging(cb),
                     )
 
-            bt.logging.debug(f"✅ Served Response: {response}")
+            bt.logging.debug(f"\033[1;32m✅ Served Response: \033[0m {response}")
             self.step += 1
 
             return synapse

@@ -2,6 +2,7 @@ import time
 import sys
 import numpy as np
 import bittensor as bt
+from time import sleep
 
 from typing import List
 from einstein.agent import HumanAgent
@@ -105,18 +106,20 @@ async def forward(self):
         #     self.config.neuron.tasks, p=self.config.neuron.task_p
         # )
         task_name = "math"
-        bt.logging.info(f"📋 Creating {task_name} task... ")
+        bt.logging.info(f"\033[1;32;40m📋 Creating {task_name} task...\033[0m")
         try:
             task = create_task(llm_pipeline=self.llm_pipeline, task_name=task_name)
             break
         except Exception as e:
             bt.logging.error(
-                f"Failed to create {task_name} task. {sys.exc_info()}. Skipping to next task."
+                f"\033[1;31;40mFailed to create {task_name} task. {sys.exc_info()}. Skipping to next task. \033[0m"
             )
+            bt.logging.info(f"Resetting task creation function...")
+            sleep(5)
             continue
 
     # Create random agent with task, topic, profile...
-    bt.logging.info(f"🤖 Creating agent for {task_name} task... ")
+    bt.logging.info(f"\033[1;32;40m🤖 Creating agent for {task_name} task...\033[0m")
     agent = HumanAgent(
         task=task, llm_pipeline=self.llm_pipeline, begin_conversation=True
     )
