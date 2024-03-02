@@ -107,6 +107,6 @@ class HuggingFaceLLM:
         response = response.replace(prompt, "").strip()
 
         bt.logging.info(
-            f"{self.__class__.__name__} generated the following output:\n{response}"
+            f"🤖 \033[1;34m{self.__class__.__name__} generated the following output:\033[0m\n{response}"
         )
         return response

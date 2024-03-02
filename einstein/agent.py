@@ -82,9 +82,6 @@ class HumanAgent(HuggingFaceLLM):
         self.challenge = self.task.format_challenge(self.challenge)
         self.challenge_time = time.time() - t0
 
-        bt.logging.info(
-            f"🤖 Challenge created: {self.challenge} in {self.challenge_time:.2f} seconds"
-        )
         return self.challenge
 
     def __state_dict__(self, full=False):
