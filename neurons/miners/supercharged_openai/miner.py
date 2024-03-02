@@ -59,8 +59,6 @@ class OpenAIMiner(Miner):
             model_name=self.config.neuron.model_id,
             max_tokens=self.config.neuron.max_tokens,
             temperature=self.config.neuron.temperature,
-            top_p = self.config.neuron.top_p,
-            top_k = self.config.neuron.top_k,
         )
         
         
