@@ -167,9 +167,6 @@ class BaseMinerNeuron(BaseNeuron):
                        None if the context was exited without an exception.
         """
         self.stop_run_thread()
-
-    def set_weights(self):
-        pass
     
     def resync_metagraph(self):
         """Resyncs the metagraph and updates the hotkeys and moving averages based on the new metagraph."""

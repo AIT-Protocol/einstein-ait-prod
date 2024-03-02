@@ -127,10 +127,8 @@ class BaseNeuron(ABC):
         Check if enough epoch blocks have elapsed since the last checkpoint to sync.
         """
         return (
-            (self.block - self.metagraph.last_update[self.uid])
-            > self.config.neuron.epoch_length
-            and self.neuron_type != "MinerNeuron"
-        )  # don't set weights if you're a miner
+            self.block - self.metagraph.last_update[self.uid]
+        ) > self.config.neuron.epoch_length
 
     def should_set_weights(self) -> bool:
         # Don't set weights on initialization.
@@ -143,14 +141,18 @@ class BaseNeuron(ABC):
 
         if not self.metagraph.validator_permit[self.uid]:
             return False
-
+        
         # Define appropriate logic for when set weights.
         return (
-            self.block - self.metagraph.last_update[self.uid]
-        ) > self.config.neuron.epoch_length
+            (self.block - self.metagraph.last_update[self.uid])
+            > self.config.neuron.epoch_length
+            and self.neuron_type != "MinerNeuron"
+        )  # don't set weights if you're a miner
 
     def save_state(self):
-        pass
+        bt.logging.warning(
+            "save_state() not implemented for this neuron. You can implement this function to save model checkpoints or other useful data."
+        )
 
     def load_state(self):
         bt.logging.debug(
