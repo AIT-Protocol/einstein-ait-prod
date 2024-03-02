@@ -176,6 +176,13 @@ def add_miner_args(cls, parser):
         help="The system prompt to use for the miner.",
         default="You are an AI that excels in solving mathematical problems. Always provide responses concisely and provide helpful explanations through step-by-step solutions. You are honest about things you don't know.",
     )
+    
+    parser.add_argument(
+        "--neuron.numpal_verbose",
+        type=bool,
+        help="If set, we will print verbose logs for NumPAL.",
+        default=True
+    )
 
     parser.add_argument(
         "--neuron.max_tokens",
