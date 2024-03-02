@@ -23,7 +23,6 @@ class ZephyrMiner(Miner):
                 torch_dtype=torch.float16,
                 load_in_8bit=True,
             )
-
         if self.config.wandb.on:
             self.identity_tags = ("zephyr_miner",)
 
