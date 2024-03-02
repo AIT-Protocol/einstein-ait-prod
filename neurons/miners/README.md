@@ -211,8 +211,22 @@ btcli s register --subtensor.network finney --netuid 5
 ```
 > When running this command, you must enter the wallet name and hotkey name that we instructed in step 2.2
 
+### Setting up ufw for miner:
+**TCP Ports:** Open ports using ufw (put any number in place of xxxx and yyyy of your choice) and use them as axon port:
 
-
+**Example**:  *sudo ufw allow xxxx:yyyy/tcp*
+```
+sudo apt install ufw
+```
+```
+sudo ufw allow 22/tcp
+```
+```
+sudo ufw enable
+```
+```
+sudo ufw status
+```
 ### Start the miner:
 Move to the einstein-ait-prod directory and run the following command:
 #### Testnet:
