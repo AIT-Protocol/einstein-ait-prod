@@ -148,6 +148,102 @@ def solution():
 
 
 
+Q: In a city, it is estimated that 30% of households own an electric car. If you randomly select 10 households from this city, what is the probability that exactly 4 of those households own an electric car?
+
+# solution in Python:
+
+
+def solution():
+    """In a city, it is estimated that 30% of households own an electric car. If you randomly select 10 households from this city, what is the probability that exactly 4 of those households own an electric car?"""
+    import math
+    p = 0.3  # probability of a household owning an electric car
+    n = 10  # total number of households selected
+    k = 4  # number of households owning an electric car
+    result = (math.comb(n, k) * (p ** k) * ((1 - p) ** (n - k)))
+    return result
+
+
+
+
+
+Q: Calculate the area of a circle with a radius of 7 units.
+
+# solution in Python:
+
+def solution():
+    """Calculate the area of a circle with a radius of 7 units."""
+    import math
+    radius = 7
+    result = math.pi * radius ** 2
+    return result
+
+
+
+
+
+Q: Solve the quadratic equation ax^2 + bx + c = 0 for a=1, b=-8, c=15.
+
+# solution in Python:
+
+def solution():
+    """Solve the quadratic equation ax^2 + bx + c = 0 for a=1, b=-8, c=15."""
+    import numpy as np
+    a, b, c = 1, -8, 15
+    result = np.roots([a, b, c])
+    return result
+
+
+
+
+
+Q: Simplify the algebraic expression 2*(x + 5) - 3*(x - 2) + x.
+
+# solution in Python:
+
+def solution():
+    """Simplify the algebraic expression 2*(x + 5) - 3*(x - 2) + x."""
+    import sympy as sp
+    x = sp.symbols('x')
+    expression = 2*(x + 5) - 3*(x - 2) + x
+    result = sp.simplify(expression)
+    return result
+
+
+
+
+
+Q: A projectile is launched at an angle of 45 degrees to the horizontal with an initial speed of 20 m/s. Calculate the maximum height reached by the projectile.
+
+# solution in Python:
+
+def solution():
+    """A projectile is launched at an angle of 45 degrees to the horizontal with an initial speed of 20 m/s. Calculate the maximum height reached by the projectile."""
+    import math
+    velocity = 20
+    angle = math.radians(45)
+    g = 9.81  # acceleration due to gravity in m/s^2
+    result = (velocity ** 2) * (math.sin(angle) ** 2) / (2 * g)
+    return result
+
+
+
+
+
+Q: Evaluate the definite integral of the function f(x) = x^2 from x=0 to x=5.
+
+# solution in Python:
+
+def solution():
+    """Evaluate the definite integral of the function f(x) = x^2 from x=0 to x=5."""
+    import scipy.integrate as spi
+    def f(x):
+        return x**2
+    result, _ = spi.quad(f, 0, 5)
+    return result
+
+
+
+
 Q: {question}
 
 # solution in Python:

@@ -170,11 +170,7 @@ class BaseMinerNeuron(BaseNeuron):
     
     def resync_metagraph(self):
         """Resyncs the metagraph and updates the hotkeys and moving averages based on the new metagraph."""
-        bt.logging.info("Resyncing the metagraph and updating the hotkeys and moving averages based on the new metagraph.")
-        bt.logging.info(f"Current block: {self.block}")
-        bt.logging.info(f"Last metagraph update for neuron {self.uid}: {self.metagraph.last_update[self.uid]}")
-        bt.logging.info(f"Epoch length: {self.config.neuron.epoch_length}")
-        bt.logging.info("Waiting for the next epoch to resync the metagraph.")
+        bt.logging.info("\033[1;33mResyncing the metagraph...\033[0m")
 
         # Sync the metagraph.
         self.metagraph.sync(subtensor=self.subtensor)

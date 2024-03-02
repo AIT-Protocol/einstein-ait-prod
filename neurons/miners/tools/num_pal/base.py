@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import ast
+import bittensor as bt
 from typing import Any, Dict, List, Optional
 
 from langchain.callbacks.manager import CallbackManagerForChainRun
@@ -36,8 +37,8 @@ class CodeValidation:
         self,
         solution_expression_name: Optional[str] = None,
         solution_expression_type: Optional[type] = None,
-        allow_imports: bool = False,
-        allow_command_exec: bool = False,
+        allow_imports: bool = True,
+        allow_command_exec: bool = True,
     ):
         """Initialize a CodeValidation instance.
 
@@ -56,9 +57,9 @@ class CodeValidation:
 
         if solution_expression_name is not None:
             if not isinstance(self.solution_expression_name, str):
-                raise ValueError(
-                    f"Expected solution_expression_name to be str, "
-                    f"instead found {type(self.solution_expression_name)}"
+                bt.logging.error(
+                    f"\033[1;31mValueError: Expected solution_expression_name to be str, "
+                    f"instead found {type(self.solution_expression_name)}\033[0m"
                 )
         if solution_expression_type is not None:
             if (
@@ -67,22 +68,22 @@ class CodeValidation:
                 and self.solution_expression_type
                 is not self.SOLUTION_EXPRESSION_TYPE_VARIABLE
             ):
-                raise ValueError(
-                    f"Expected solution_expression_type to be one of "
+                bt.logging.error(
+                    f"\033[1;31mValueError: Expected solution_expression_type to be one of "
                     f"({self.SOLUTION_EXPRESSION_TYPE_FUNCTION},"
                     f"{self.SOLUTION_EXPRESSION_TYPE_VARIABLE}),"
-                    f"instead found {self.solution_expression_type}"
+                    f"instead found {self.solution_expression_type}\033[0m"
                 )
 
         if solution_expression_name is not None and solution_expression_type is None:
-            raise TypeError(
-                "solution_expression_name "
-                "requires solution_expression_type to be passed as well"
+            bt.logging.error(
+                f"\033[1;31mTypeError: solution_expression_name "
+                f"requires solution_expression_type to be passed as well\033[0m"
             )
         if solution_expression_name is None and solution_expression_type is not None:
-            raise TypeError(
-                "solution_expression_type "
-                "requires solution_expression_name to be passed as well"
+            bt.logging.error(
+                f"\033[1;31mTypeError: solution_expression_type "
+                f"requires solution_expression_name to be passed as well\033[0m"
             )
 
         self.allow_imports = allow_imports
@@ -175,16 +176,37 @@ class NumPAL(Chain):
         try:
             code_tree = ast.parse(code)
         except (SyntaxError, UnicodeDecodeError):
-            raise ValueError(f"Generated code is not valid python code: {code}")
+            bt.logging.error(f"\033[1;31mGenerated code is not valid python code: \033[0m{code}")
+            bt.logging.info("\033[1;33mUsing the standard model instead...\033[0m")
         except TypeError:
-            raise ValueError(
-                f"Generated code is expected to be a string, "
+            bt.logging.error(
+                f"\033[1;31mTypeError: Expected code to be str,"
                 f"instead found {type(code)}"
             )
+            bt.logging.info("\033[1;33mUsing the standard model instead...\033[0m")
         except OverflowError:
-            raise ValueError(
-                f"Generated code too long / complex to be parsed by ast: {code}"
+            bt.logging.error(
+                f"\033[1;31mOverflowError: Generated code too long / complex to run on python code: \033[0m{code}"
             )
+            bt.logging.info("\033[1;33mUsing the standard model instead...\033[0m")
+
+        allowed_imports_list = {"math", "numpy", "sympy", "scipy"}
+        has_unallowed_imports = False
+
+        if has_unallowed_imports:
+            bt.logging.error(
+                f"\033[1;31mGenerated code has disallowed imports: \033[0m{code}"
+            )
+
+        for node in ast.walk(code_tree):
+            if isinstance(node, (ast.Import, ast.ImportFrom)):
+                for name in node.names:
+                    if name.name.split('.')[0] not in allowed_imports_list:
+                        has_unallowed_imports = True
+                        bt.logging.error(
+                            f"\033[1;31mGenerated code has disallowed import: {name.name}\033[0m"
+                        )
+                        break
 
         found_solution_expr = False
         if code_validations.solution_expression_name is None:
@@ -221,14 +243,18 @@ class NumPAL(Chain):
                 has_imports = True
 
         if not found_solution_expr:
-            raise ValueError(
-                f"Generated code is missing the solution expression: "
+            bt.logging.error(
+                f"\033[1;31mGenerated code is missing the solution expression: "
                 f"{code_validations.solution_expression_name} of type: "
-                f"{code_validations.solution_expression_type}"
+                f"{code_validations.solution_expression_type}\033[0m"
             )
+            bt.logging.info("\033[1;33mUsing the standard model instead...\033[0m")
 
         if not code_validations.allow_imports and has_imports:
-            raise ValueError(f"Generated code has disallowed imports: {code}")
+            bt.logging.error(
+                f"\033[1;31mGenerated code has disallowed imports: \033[0m{code}"
+            )
+            bt.logging.info("\033[1;33mUsing the standard model instead...\033[0m")
 
         if (
             not code_validations.allow_command_exec
@@ -240,9 +266,9 @@ class NumPAL(Chain):
                     and isinstance(node, ast.Attribute)
                     and node.attr in COMMAND_EXECUTION_ATTRIBUTES
                 ):
-                    raise ValueError(
-                        f"Found illegal command execution function "
-                        f"{node.attr} in code {code}"
+                    bt.logging.error(
+                        f"\033[1;31mFound illegal command execution attribute "
+                        f"{node.attr} in code {code}\033[0m"
                     )
                 if (not code_validations.allow_command_exec) and isinstance(
                     node, ast.Call
@@ -251,24 +277,26 @@ class NumPAL(Chain):
                         hasattr(node.func, "id")
                         and node.func.id in COMMAND_EXECUTION_FUNCTIONS
                     ):
-                        raise ValueError(
-                            f"Found illegal command execution function "
-                            f"{node.func.id} in code {code}"
+                        bt.logging.error(
+                            f"\033[1;31mFound illegal command execution function "
+                            f"{node.func.id} in code {code}\033[0m"
                         )
 
                     if (
                         isinstance(node.func, ast.Attribute)
                         and node.func.attr in COMMAND_EXECUTION_FUNCTIONS
                     ):
-                        raise ValueError(
-                            f"Found illegal command execution function "
-                            f"{node.func.attr} in code {code}"
+                        bt.logging.error(
+                            f"\033[1;31mFound illegal command execution function "
+                            f"{node.func.attr} in code {code}\033[0m"
                         )
 
                 if (not code_validations.allow_imports) and (
                     isinstance(node, ast.Import) or isinstance(node, ast.ImportFrom)
                 ):
-                    raise ValueError(f"Generated code has disallowed imports: {code}")
+                    bt.logging.error(
+                        f"\033[1;31mFound illegal import in code {code}\033[0m"
+                    )
 
     @classmethod
     def from_math_prompt(cls, llm: BaseLanguageModel, **kwargs: Any) -> NumPAL:
