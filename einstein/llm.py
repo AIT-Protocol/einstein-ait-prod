@@ -65,7 +65,7 @@ class HuggingFaceLLM:
 
     def query(
         self,
-        message: List[Dict[str, str]],
+        message: str,
         role: str = "user",
         disregard_system_prompt: bool = False,
         cleaner: CleanerPipeline = None,
