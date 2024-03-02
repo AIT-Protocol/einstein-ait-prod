@@ -63,19 +63,17 @@ class ZephyrMiner(Miner):
             response = (HuggingFaceLLM(
                 llm_pipeline=self.llm_pipeline,
                 system_prompt=self.system_prompt,
-                max_new_tokens=self.config.neuron.max_tokens,
+                max_new_tokens=self.config.neuron.max_tokens, # default :256
                 do_sample=self.config.neuron.do_sample,
-                temperature=self.config.neuron.temperature,
-                top_k=self.config.neuron.top_k,
-                top_p=self.config.neuron.top_p,
+                temperature=self.config.neuron.temperature,# default :0.7 ( the higher the more randomness and creativity )
+                top_k=self.config.neuron.top_k,# default :50 
+                top_p=self.config.neuron.top_p,# default :0.95
             ).
-            query(
-                message = synapse.messages[-1],
-                role="user",
-                disregard_system_prompt=False,
-                cleaner=None,
+            queryTemp(
+                message=synapse.messages[-1],
+                # disregard_system_prompt=False,
+                # cleaner=None,
             ))
-
             synapse.completion = response
             synapse_latency = time.time() - t0
 
