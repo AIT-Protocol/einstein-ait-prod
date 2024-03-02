@@ -70,7 +70,7 @@ class ZephyrMiner(Miner):
                 top_p=self.config.neuron.top_p,
             ).
             query(
-                message = synapse.messages,
+                message = synapse.messages[-1],
                 role="user",
                 disregard_system_prompt=False,
                 cleaner=None,
