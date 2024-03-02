@@ -1,14 +1,7 @@
 # Biττensor: Einstein Subnet Miner Setup
 *How to Mine on the Bittensor Einstein Subnet (SN5)*
-## 1. INTRODUCTION
-Our primary narrative as a mathematics, logic, and data analysis AI subnet is to optimize response accuracy. We achieve this by enabling the language model to autonomously write, test, and execute code within unique Python environments. This approach ensures that our responses are not only precise but also practical, effectively addressing everyday challenges faced by users. Furthermore, our deployment offers significant advantages to the Bittensor ecosystem. By providing a model capable of independent code writing and execution, we bolster the capabilities of other subnets, thereby enhancing their accuracy and improving the quality of responses network-wide. Therefore, our contributions extend beyond direct user support to elevating the overall functionality of the Bittensor ecosystem.
-<br>
-<br>
-### Mission
-At Einstein-AIT, our mission is to enhance the Bittensor ecosystem by providing a robust and reliable subnet dedicated to the computation of complex mathematical operations and logical reasoning. We strive to empower startups and enterprises by offering seamless access to our advanced computational resources through user-friendly APIs, tailored for real-world applications.
-Our mission extends to creating symbiotic relationships with other subnets, fostering a culture of mutual growth and knowledge exchange, thereby adding capabilities to the broader network of models and applications.
-### Vision
-We are dedicated to aligning with Bittensor's core values of permissionless participation and the decentralization of services. Our vision is to cultivate a subnet that embodies these principles, fostering an environment where innovation thrives on the collective strength and diversity of its participants. Together, we are building the foundation for a more open, collaborative, and decentralized world.
+
+## 1. INSTALLATION
 ### Compute Requirements
 #### FINE TUNED MINER (WIP) REQUIREMENTS
 - GPU with 18GB or higher VRAM
@@ -17,16 +10,16 @@ We are dedicated to aligning with Bittensor's core values of permissionless part
 - CUDA 12.0 or higher
 #### OPENAI MINER REQUIREMENTS
 - Python 3.9 or 3.10 (Recommended)
-## 2. INSTALLATION
 This installation process requires [Ubuntu 22.04.1](https://old-releases.ubuntu.com/releases/22.04.1/ubuntu-22.04.1-desktop-amd64.iso) and python 3.9 or 3.10.
-### 2.1 BEGIN BY INSTALLING BITTENSOR:
+### 1.1 BEGIN BY INSTALLING BITTENSOR:
 ```
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/opentensor/bittensor/master/scripts/install.sh)"
 ```
 See Bittensor’s documentation for alternative installation instructions.
 <Br>
 **Bittensor Documentation:** [https://docs.bittensor.com/](https://docs.bittensor.com/)
-### 2.2 VERIFY THE INSTALLATION:
+
+### 1.2 VERIFY THE INSTALLATION:
 Verify using the ***btcli*** command
 ```
 btcli --help
@@ -75,7 +68,7 @@ btcli w regen_coldkey
 ```
 btcli w regen_hotkey
 ```
-## 4. CLONE EINSTEIN-SUBNET
+## 2. CLONE EINSTEIN-SUBNET
 ```
 git clone https://github.com/AIT-Protocol/einstein-ait-prod
 ```
@@ -83,7 +76,7 @@ Access the Einstein-Subnet Directory
 ```
 cd einstein-ait-prod
 ```
-## 5. EINSTEIN SUBNET DEPENDENCIES
+## 3. EINSTEIN SUBNET DEPENDENCIES
 > For optimal functionality of the Compute Subnet, it's essential to install the appropriate graphics drivers and dependencies.<br>
 
 ### Required dependencies for miners:
@@ -200,7 +193,7 @@ Cuda compilation tools, release 12.3, V12.3.103
 Build cuda_12.3.r12.3/compiler.33492891_0
 ```
 You can refer to the Cuda installation documentation [here](https://developer.nvidia.com/cuda-12-3-1-download-archive?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=22.04&target_type=deb_local)
-## 6. SETTING UP A MINER 
+## 4. SETTING UP A MINER 
 > We encourage miners to use testnet as this gives you a risk-free playground before running on mainnet. If you require test tao, please reach out to our [Subnet 5 Discord](https://discord.gg/wVPZrVu9).
 ### Hotkey Registration
 At this point, you will need some $TAO in your coldkey address for miner registration. Once your coldkey is funded, run the command below to register your hotkey:
