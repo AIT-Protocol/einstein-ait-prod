@@ -95,6 +95,28 @@ echo 'OPENAI_API_KEY=your_api_key_here' >> .env
 ```
 wandb login
 ```
+### Install the virtual environment (Miniconda):
+These quick command line instructions will get you set up quickly with the latest Miniconda installer for Linux.
+```
+mkdir -p ~/miniconda3
+```
+```
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda3/miniconda.sh
+```
+```
+bash ~/miniconda3/miniconda.sh -b -u -p ~/miniconda3
+```
+```
+rm -rf ~/miniconda3/miniconda.sh
+```
+```
+~/miniconda3/bin/conda init bash
+```
+```
+~/miniconda3/bin/conda init zsh
+```
+>Note: You need to create a new terminal to use Miniconda.
+You can visit [this link](https://docs.anaconda.com/free/miniconda/#quick-command-line-install) to see detailed instructions about Miniconda
 ### Install the NVIDIA Driver
 > Note: Loading the graphics card may be corrupted because your operating system is running in secure boot mode. To avoid this error you should turn off security boot in BIOS
 
