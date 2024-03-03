@@ -176,19 +176,12 @@ def add_miner_args(cls, parser):
         help="The system prompt to use for the miner.",
         default="You are an AI that excels in solving mathematical problems. Always provide responses concisely and provide helpful explanations through step-by-step solutions. You are honest about things you don't know.",
     )
-
+    
     parser.add_argument(
-        "--numpal.off",
-        action='store_true',
-        help="If set, the miner model will not use NumPAL supercharger for the model to process math.",
-        default=False
-    )
-
-    parser.add_argument(
-        "--numpal.verbose.off",
-        action='store_true',
-        help="If set, the miner model will not use NumPAL supercharger for the model to process math.",
-        default=False
+        "--neuron.numpal_verbose",
+        type=bool,
+        help="If set, we will print verbose logs for NumPAL.",
+        default=True
     )
 
     parser.add_argument(
