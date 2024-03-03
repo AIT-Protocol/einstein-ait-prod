@@ -244,6 +244,32 @@ def solution():
 
 
 
+Q: The distance from city A to B is 208.5 km, a motorbike starts from city A to city B with the speed of 38.6 km/h. There is a car also starting at the same time as the motorbike but starts from B towards A with the speed of 44.8 km/h. Both the vehicles start at 8:30 am. At what time do they meet each other? And how far from city A do they meet?
+
+# solution in Python:
+
+def solution():
+    """The distance from city A to B is 208.5 km, a motorbike starts from city A to city B with the speed of 38.6 km/h. 
+    There is a car also starting at the same time as the motorbike but starts from B towards A with the speed of 44.8 km/h. 
+    Both the vehicles start at 8:30 am. At what time do they meet each other? And how far from city A do they meet?"""
+    import datetime
+    distance = 208.5  # km
+    speed_bike = 38.6  # km/h
+    speed_car = 44.8  # km/h
+    total_speed = speed_bike + speed_car  # km/h
+    time_to_meet = distance / total_speed  # hours
+    time_to_meet_in_minutes = time_to_meet * 60  # minutes
+    start_time = datetime.datetime.strptime('08:30', '%H:%M')
+    meet_time = start_time + datetime.timedelta(minutes=time_to_meet_in_minutes)
+    distance_from_A = speed_bike * time_to_meet  # km
+    meet_time_formatted = meet_time.strftime('%H:%M')
+    result = (meet_time_formatted, distance_from_A)
+    return result
+
+
+
+
+
 Q: {question}
 
 # solution in Python:
