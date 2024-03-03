@@ -16,3 +16,4 @@ wandb==0.15.10
 tenacity==8.2.3
 antlr4-python3-runtime==4.11
 git+https://github.com/AIT-Protocol/mathdataset.git@main#egg=mathgenerator
+git+https://github.com/AIT-Protocol/NumPAL.git@main#egg=NumPAL

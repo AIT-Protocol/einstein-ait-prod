@@ -183,6 +183,7 @@ Running Miners is very competitive and requires a lot of resources. We encourage
 3. Start the miner:
 
    We recommend using pm2 to run the miner as it will automatically restart the miner if it crashes.
+
    ```bash
    pm2 start neurons/miners/openai/miner.py --name s5_openai_miner \
    --interpreter python \
@@ -192,15 +193,21 @@ Running Miners is very competitive and requires a lot of resources. We encourage
    --wallet.hotkey <your miner hotkey> \
    --logging.debug \
    # WHAT BELOW IS OPTIONAL, PLEASE READ THE DESCRIPTIONS BELOW
-   --neuron.model_id gpt-4 \
+   --neuron.model_id gpt-3.5-turbo-0125 \
    --neuron.max_tokens 1024 \
    --neuron.temperature 0.9 \
    --neuron.top_p 0.9 \
    --neurom.top_k 50 \
    --neuron.system_prompt "your prompt engineering"
+   --numpal.verbose.off \ # Set this if you want to disable verbose mode for NumPAL
+   --numpal.off \ # Set this if you want to disable NumPAL (Not recommended)
    ```
 
    *NOTE: Your wallet and wallet's hotkey must be created using the bittensor-cli and registered to the netuid 78 (our testnet uid). Additionally, you can run the validator in trace mode by using `--logging.trace` instead of `--logging.debug`*
+
+   *- The `--numpal.off` flag is used to disable NumPAL. NumPAL is a feature that allows the miner to solve mathematical problems using the NumPAL supercharger model. Set this flag if you want to disable NumPAL.*
+
+   *- The `--numpal.verbose.off` flag is used to disable logging mode for NumPAL. Set this flag if you want to disable logging mode for NumPAL.*
 
    *- The `--neuron.model_id` flag is used to specify the model you want to use. The default value is `gpt3.5-turbo` which is the latest model from OpenAI, you can find out more about the models [here](https://platform.openai.com/docs/models/)*
 
