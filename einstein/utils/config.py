@@ -178,6 +178,20 @@ def add_miner_args(cls, parser):
     )
 
     parser.add_argument(
+        "--numpal.off",
+        action='store_true',
+        help="If set, the miner model will not use NumPAL supercharger for the model to process math.",
+        default=False
+    )
+
+    parser.add_argument(
+        "--numpal.verbose.off",
+        action='store_true',
+        help="If set, the miner model will not use NumPAL supercharger for the model to process math.",
+        default=False
+    )
+
+    parser.add_argument(
         "--neuron.max_tokens",
         type=int,
         default=256,
