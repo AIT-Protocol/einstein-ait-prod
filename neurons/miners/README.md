@@ -80,9 +80,11 @@ cd einstein-ait-prod
 > For optimal functionality of the Compute Subnet, it's essential to install the appropriate graphics drivers and dependencies.<br>
 
 ### Required dependencies for miners:
+If you use your computer to run the miner, you need to install according to the command below: 
 ```
 python -m pip install -r requirements.txt && python -m pip install -e .
 ```
+If you use the **OPENAI_API_KEY** to run the miner, you need to run 2 commands below:
 ```
 pip install -r neurons/miners/openai/requirements.txt
 ```
@@ -90,7 +92,7 @@ pip install -r neurons/miners/openai/requirements.txt
 echo 'OPENAI_API_KEY=your_api_key_here' >> .env
 ```
 > You can access [https://platform.openai.com/api-keys](https://platform.openai.com/api-keys) to create new api key (Secret Key) <br>
->
+
 ### Login to Weight and Biases
 ```
 wandb login
@@ -131,6 +133,8 @@ pm2 ls
 ```
 You can read detail information about PM2 at [this link](https://pm2.keymetrics.io/docs/usage/quick-start/).
 ### Install the NVIDIA Driver
+> Note: You can skip this step if you are running the miner by your **OPEN_API_KEY** 
+
 > Note: Loading the graphics card may be corrupted because your operating system is running in secure boot mode. To avoid this error you should turn off security boot in BIOS
 
 ```
@@ -188,6 +192,7 @@ The output of which should look something like:
 +---------------------------------------------------------------------------------------+
 ```
 ### Install the NVIDIA CUDA Toolkit
+> Note: You can skip this step if you are running the miner by your **OPEN_API_KEY** 
 ```
 wget https://developer.download.nvidia.com/compute/cuda/12.3.1/local_installers/cuda-repo-ubuntu2204-12-3-local_12.3.1-545.23.08-1_amd64.deb
 ```
@@ -262,24 +267,26 @@ sudo ufw enable
 ```
 sudo ufw status
 ```
-### Start the miner:
-Move to the einstein-ait-prod directory and run the following command:
-#### Using python
-##### Testnet:
+### Run the miner:
+Move to the **einstein-ait-prod** directory and run the following command:
+#### The OPENAI_API_KEY:
+
+*Testnet:*
 ```
 python neurons/miners/openai/miner.py --netuid 78 --subtensor.network test --wallet.name <your miner wallet name> --wallet.hotkey <your miner hotkey name> --neuron.model_id gpt-4 --neuron.max_tokens 1024 --neuron.temperature 0.9 --logging.debug
 ```
-##### Mainnet:
+*Mainnet:*
 ```
 python neurons/miners/openai/miner.py --netuid 5 --subtensor.network finney --wallet.name <your miner wallet name> --wallet.hotkey <your miner hotkey name> --neuron.model_id gpt-4 --neuron.max_tokens 1024 --neuron.temperature 0.9 --logging.debug
 ```
-#### Using PM2
+#### On localhost using PM2:
 > Note: When using PM2, you will run both miner and validator. Therefore, if you just follow this guide, you will get an error because you have not set up a validator, but you can rest assured that this error will not affect the miner running.
-##### Testnet:
+
+*Testnet:* 
 ```
 pm2 start run.sh --name s78_validator_autoupdate --wallet.name <your miner wallet name> --wallet.hotkey <your miner hotkey name> --netuid 78 --subtensor.network test
 ```
-##### Mainnet:
+*Mainnet:*
 ```
 pm2 start run.sh --name s5_validator_autoupdate --wallet.name <your miner wallet name> --wallet.hotkey <your miner hotkey name> --netuid 5 --subtensor.network finney
 ```
