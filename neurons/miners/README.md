@@ -117,6 +117,19 @@ rm -rf ~/miniconda3/miniconda.sh
 ```
 >Note: You need to create a new terminal to use Miniconda.
 You can visit [this link](https://docs.anaconda.com/free/miniconda/#quick-command-line-install) to see detailed instructions about Miniconda
+### Install python
+```
+conda install python=3.10
+```
+### Install PM2
+```
+sudo apt update && sudo apt install jq && sudo apt install npm && sudo npm install pm2 -g && pm2 update 
+```
+Confirm pm2 is installed and running correctly
+```
+pm2 ls
+```
+You can read detail information about PM2 at [this link](https://pm2.keymetrics.io/docs/usage/quick-start/).
 ### Install the NVIDIA Driver
 > Note: Loading the graphics card may be corrupted because your operating system is running in secure boot mode. To avoid this error you should turn off security boot in BIOS
 
@@ -251,30 +264,29 @@ sudo ufw status
 ```
 ### Start the miner:
 Move to the einstein-ait-prod directory and run the following command:
-#### Testnet:
+#### Using python
+##### Testnet:
 ```
-python neurons/miners/openai/miner.py \
---netuid 78 
---subtensor.network test \
---wallet.name <your miner wallet name> \
---wallet.hotkey <your miner hotkey name> \
---neuron.model_id gpt-4 \
---neuron.max_tokens 1024 \
---neuron.temperature 0.9 \
---logging.debug
+python neurons/miners/openai/miner.py --netuid 78 --subtensor.network test --wallet.name <your miner wallet name> --wallet.hotkey <your miner hotkey name> --neuron.model_id gpt-4 --neuron.max_tokens 1024 --neuron.temperature 0.9 --logging.debug
 ```
-#### Mainnet:
+##### Mainnet:
 ```
-python neurons/miners/openai/miner.py \
---netuid 5
---subtensor.network finney \
---wallet.name <your miner wallet name> \
---wallet.hotkey <your miner hotkey name> \
---neuron.model_id gpt-4 \
---neuron.max_tokens 1024 \
---neuron.temperature 0.9 \
---logging.debug
+python neurons/miners/openai/miner.py --netuid 5 --subtensor.network finney --wallet.name <your miner wallet name> --wallet.hotkey <your miner hotkey name> --neuron.model_id gpt-4 --neuron.max_tokens 1024 --neuron.temperature 0.9 --logging.debug
 ```
+#### Using PM2
+> Note: When using PM2, you will run both miner and validator. Therefore, if you just follow this guide, you will get an error because you have not set up a validator, but you can rest assured that this error will not affect the miner running.
+##### Testnet:
+```
+pm2 start run.sh --name s78_validator_autoupdate --wallet.name <your miner wallet name> --wallet.hotkey <your miner hotkey name> --netuid 78 --subtensor.network test
+```
+##### Mainnet:
+```
+pm2 start run.sh --name s5_validator_autoupdate --wallet.name <your miner wallet name> --wallet.hotkey <your miner hotkey name> --netuid 5 --subtensor.network finney
+```
+You can check logs by this command: ```pm2 log```
+
+You can flush logs by this command: ```pm2 flush```
+
 - <mark>neuron.model_id</mark>: is used to specify the model you want to use. 
   >Default = gpt3.5-turbo
 - <mark>neuron.system_prompt</mark>: prompt engineering, replace the place to change the model's personas, how they response, custom knowledge,...etc.    
