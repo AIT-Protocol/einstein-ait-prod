@@ -62,7 +62,7 @@ def add_args(cls, parser):
     Adds relevant arguments to the parser for operation.
     """
     # Netuid Arg: The netuid of the subnet to connect to.
-    parser.add_argument("--netuid", type=int, help="Subnet netuid", default=1)
+    parser.add_argument("--netuid", type=int, help="Subnet netuid", default=5)
 
     parser.add_argument(
         "--neuron.device",
@@ -174,7 +174,21 @@ def add_miner_args(cls, parser):
         "--neuron.system_prompt",
         type=str,
         help="The system prompt to use for the miner.",
-        default="You are an AI that excels in solving mathematical problems. Always provide responds concisely and helpfully explanations and step-by-step solutions. You are honest about things you don't know.",
+        default="You are an AI that excels in solving mathematical problems. Always provide responses concisely and provide helpful explanations through step-by-step solutions. You are honest about things you don't know.",
+    )
+
+    parser.add_argument(
+        "--numpal.off",
+        action='store_true',
+        help="If set, the miner model will not use NumPAL supercharger for the model to process math.",
+        default=False
+    )
+
+    parser.add_argument(
+        "--numpal.verbose.off",
+        action='store_true',
+        help="If set, the miner model will not use NumPAL supercharger for the model to process math.",
+        default=False
     )
 
     parser.add_argument(
@@ -255,7 +269,7 @@ def add_validator_args(cls, parser):
         type=str,
         nargs="+",
         help="The tasks to use for the validator.",
-        default=["math"],
+        default=["math", "logic", "data"],
     )
 
 # ADJUST WHEN HAVING MORE TASK TYPES
@@ -264,7 +278,7 @@ def add_validator_args(cls, parser):
         type=float,
         nargs="+",
         help="The probability of sampling each task.",
-        default=[1.0],
+        default=[1.0, 0.0, 0.0],
     )
 
     parser.add_argument(
@@ -306,9 +320,16 @@ def add_validator_args(cls, parser):
         "--neuron.moving_average_alpha",
         type=float,
         help="Moving average alpha parameter, how much to add of the new observation.",
-        default=0.05,
+        default=0.1,
     )
-
+    
+    parser.add_argument(
+        "--neuron.decay_alpha",
+        type=float,
+        help="Constant decay rate for the moving average score.",
+        default=0.001,
+    )
+    
     parser.add_argument(
         "--neuron.axon_off",
         "--axon_off",

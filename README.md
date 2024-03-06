@@ -1,12 +1,12 @@
 
 <div align="center">
-  <h1>Einstein - AIT</h1>
+  <h1>🧠 Einstein - AIT 🤖</h1>
 
-## **Subnet 5**
+## **Subnet 5 🌐**
 
 ---
 
-### The Incentivized Internet <!-- omit in toc -->
+### 🚀 The Incentivized Internet <!-- omit in toc -->
 
 [Subnet 5 Discord](https://discord.gg/wVPZrVu9) • [AIT Discord](https://discord.gg/aitprotocols) • [AIT Telegram](AIT_Protocol)
 
@@ -16,21 +16,21 @@
 
 This repository is the **official codebase for the Einstein - AIT subnet**. It contains the code for the validators and miners that are used to validate and mine on the subnet.
 
-# Introduction
+# 📚 Introduction
 
 Our primary narrative as a mathematics, logic, and data analysis AI subnet is to optimize response accuracy. We achieve this by enabling the language model to autonomously write, test, and execute code within unique Python environments. This approach ensures that our responses are not only precise but also practical, effectively addressing everyday challenges faced by users. Furthermore, our deployment offers significant advantages to the Bittensor ecosystem. By providing a model capable of independent code writing and execution, we bolster the capabilities of other subnets, thereby enhancing their accuracy and improving the quality of responses network-wide. Therefore, our contributions extend beyond direct user support to elevating the overall functionality of the Bittensor ecosystem.
 
-## Mission
+## 🎯 Mission
 
 At Einstein-AIT, our mission is to enhance the Bittensor ecosystem by providing a robust and reliable subnet dedicated to the computation of complex mathematical operations and logical reasoning. We strive to empower startups and enterprises by offering seamless access to our advanced computational resources through user-friendly APIs, tailored for real-world applications.
 
 Our mission extends to creating symbiotic relationships with other subnets, fostering a culture of mutual growth and knowledge exchange, thereby adding capabilities to the broader network of models and applications.
 
-## Vision
+## 🔮 Vision
 
 We are dedicated to aligning with Bittensor's core values of permissionless participation and the decentralization of services. Our vision is to cultivate a subnet that embodies these principles, fostering an environment where innovation thrives on the collective strength and diversity of its participants. Together, we are building the foundation for a more open, collaborative, and decentralized world.
 
-# Compute Requirements
+# 💻 Compute Requirements
 
 **VALIDATOR** REQUIREMENTS
 
@@ -50,7 +50,7 @@ FINE TUNED **MINER** (`WIP`) REQUIREMENTS
 
 - Python 3.8, 3.9 or 3.10
 
-# Tools
+# 🛠️ Tools
 
 Currently, the tooling stack includes `mathgenerator`, `OpenAI`, `HuggingFace`, `LangChain`, and `WandB`
 
@@ -62,7 +62,7 @@ Comming soon to public:
 
 More tooling will be included in future releases.
 
-# Tasks
+# 📋 Tasks
 
 The validation process supports an ever-growing number of tasks. Tasks drive agent behaviour based on specific goals, such as;
 
@@ -76,7 +76,7 @@ Coming soon in future releases:
 
 Tasks contain a **query** (basic question/problem) and a **reference** (ideal answer), where a downstream HumanAgent creates a more nuanced version of the **query**.
 
-# Installation
+# 📲 Installation
 
 This repository requires python3.9 or higher. To install, simply clone this repository and install the requirements.
 
@@ -88,13 +88,28 @@ git clone https://github.com/ait-protocol/einstein-ait-prod.git && cd einstein-a
 python -m pip install -r requirements.txt && python -m pip install -e .
 ```
 
+Install [PM2](https://pm2.io/docs/runtime/guide/installation/) and the [`jq` package](https://jqlang.github.io/jq/) on your system.
+
+   **- On Linux**:
+  
+   ```bash
+   sudo apt update && sudo apt install jq && sudo apt install npm && sudo npm install pm2 -g && pm2 update
+   ```
+  
+   **- On Mac OS**
+  
+   ```bash
+   brew update && brew install jq && brew install npm && sudo npm install pm2 -g && pm2 update
+   ```
 ---
 
-# Running Validators and Miners
+# 🏃 Running Validators and Miners
 
 *Disclaimer:*
 
 We encourage miners to use testnet as this gives you a risk-free playground before running on mainnet. If you require test tao, please reach out to our [Subnet 5 Discord](https://discord.gg/wVPZrVu9).
+
+For miners and validators running on mainnet, we **strongly recommend** using a [local subtensor](https://github.com/opentensor/subtensor) for improved performance and security.
 
 Prior to running a miner or validator, you must [create a wallet](https://github.com/opentensor/docs/blob/main/reference/btcli.md) and [register the wallet to a netuid](https://github.com/opentensor/docs/blob/main/subnetworks/registration.md). Once you have done so, you can run the miner and validator with the following commands.
 
@@ -106,50 +121,45 @@ Prior to running a miner or validator, you must [create a wallet](https://github
 
 ---
 
-## Running Validators
+## 🧾 Running Validators
 
 1. Install this repository, you can do so by following the steps outlined in [the installation section](#installation).
 2. Install [Weights and Biases](https://docs.wandb.ai/quickstart) and run `wandb login` within this repository. This will initialize Weights and Biases, enabling you to view KPIs and Metrics on your validator. (Strongly recommended to help the network improve from data sharing)
-3. Install [PM2](https://pm2.io/docs/runtime/guide/installation/) and the [`jq` package](https://jqlang.github.io/jq/) on your system.
-   **On Linux**:
+3. Run the `run.sh` script which will handle running your validator and pulling the latest updates as they are issued.
 
    ```bash
-   sudo apt update && sudo apt install jq && sudo apt install npm && sudo npm install pm2 -g && pm2 update
-   ```
-
-   **On Mac OS**
-
-   ```bash
-   brew update && brew install jq && brew install npm && sudo npm install pm2 -g && pm2 update
-   ```
-
-4. Run the `run.sh` script which will handle running your validator and pulling the latest updates as they are issued.
-
-   ```bash
-   pm2 start run.sh --name s1_validator_autoupdate -- --wallet.name <your-wallet-name> --wallet.hotkey <your-wallet-hot-key>
+   pm2 start run.sh --name s5_validator_autoupdate -- --wallet.name <your-wallet-name> --wallet.hotkey <your-wallet-hot-key>
    ```
 
    The `run.sh` script will automatically pull the latest updates from the repository and restart the validator. This is useful for keeping your validator up to date with the latest changes.
 
-5. **Running the Validator:**
+   - Some useful pm2 commands:
 
-  ```bash
-  python neurons/validator.py \
+   ```bash
+   pm2 status # This will show you the status of all pm2 processes
+   pm2 logs VALIDATOR # This will show you the logs of the validator
+   pm2 stop {process_id} # This will stop the process
+   ```
+
+4. **OPTIONAL if you are not running by pm2:**
+
+   ```bash
+   python neurons/validator.py \
    --netuid < 78 / 5> \ #78 is our testnet and 5 is our mainnet
    --subtensor.network <test/finney> \
-  --neuron.device cuda \
-  --wallet.name <your validator wallet> \
-  --wallet.hotkey <your validator hotkey> \
-  --logging.debug
-  ```
+   --neuron.device cuda \
+   --wallet.name <your validator wallet> \
+   --wallet.hotkey <your validator hotkey> \
+   --logging.debug
+   ```
 
    *NOTE: Your wallet and wallet's hotkey must be created using the bittensor-cli and registered to the netuid 78 (our testnet uid). Additionally, you can run the validator in trace mode by using `--logging.trace` instead of `--logging.debug`*
 
 ---
 
-## Running Miners
+## 🏗️ Running Miners
 
-Running Miners is very competitive and requires a lot of resources. We encourage miners to use testnet as this gives you a risk-free playground before running on mainnet. Due to its competitive nature, we encourage miners to do fine-tuning and optimization before running on mainnet. feel free to also develop your own miner too!
+Running Miners is very competitive and requires a lot of resources. We encourage miners to use testnet as this gives you a risk-free playground before running on mainnet. Due to its competitive nature, we encourage miners to do fine-tuning and optimization before running on mainnet. feel free to also develop your own miner too! 
 
 ### Base Models
 
@@ -172,25 +182,52 @@ Running Miners is very competitive and requires a lot of resources. We encourage
 
 3. Start the miner:
 
+   We recommend using pm2 to run the miner as it will automatically restart the miner if it crashes.
+
    ```bash
-   python neurons/miners/openai/miner.py \
-   --netuid <78 / 5> \ #78 is our testnet and 5 is our mainnet
+   pm2 start neurons/miners/openai/miner.py --name s5_openai_miner \
+   --interpreter python \
+   -- --netuid <78 / 5> \ #78 is our testnet and 5 is our mainnet
    --subtensor.network <test/finney> \
    --wallet.name <your miner wallet> \
    --wallet.hotkey <your miner hotkey> \
-   --neuron.model_id gpt-4 \
+   --logging.debug \
+   # WHAT BELOW IS OPTIONAL, PLEASE READ THE DESCRIPTIONS BELOW
+   --neuron.model_id gpt-3.5-turbo-0125 \
    --neuron.max_tokens 1024 \
    --neuron.temperature 0.9 \
-   --logging.debug
+   --neuron.top_p 0.9 \
+   --neurom.top_k 50 \
+   --neuron.system_prompt "your prompt engineering"
+   --numpal.verbose.off \ # Set this if you want to disable verbose mode for NumPAL
+   --numpal.off \ # Set this if you want to disable NumPAL (Not recommended)
    ```
 
    *NOTE: Your wallet and wallet's hotkey must be created using the bittensor-cli and registered to the netuid 78 (our testnet uid). Additionally, you can run the validator in trace mode by using `--logging.trace` instead of `--logging.debug`*
 
-   *- The `--neuron.model_id` flag is used to specify the model you want to use. The default value is `gpt3.5-turbo`*
+   *- The `--numpal.off` flag is used to disable NumPAL. NumPAL is a feature that allows the miner to solve mathematical problems using the NumPAL supercharger model. Set this flag if you want to disable NumPAL.*
 
-   *- The `--neuron.max_tokens` flag is used to specify the maximum number of tokens the model can generate. The default value is `256`*
+   *- The `--numpal.verbose.off` flag is used to disable logging mode for NumPAL. Set this flag if you want to disable logging mode for NumPAL.*
 
-   *- The `--neuron.temperature` flag is used to specify the temperature of the model. The default value is `0.7`*
+   *- The `--neuron.model_id` flag is used to specify the model you want to use. The default value is `gpt3.5-turbo` which is the latest model from OpenAI, you can find out more about the models [here](https://platform.openai.com/docs/models/)*
+
+   *- The `--neuron.max_tokens` flag is used to specify the maximum number of tokens the model can generate which is the length of the response. The default value is `256`*
+
+   *- The `--neuron.temperature` flag is used to specify the temperature of the model which controls the creativeness of the model. The default value is `0.7`*
+
+   *- The `--neuron.top_p` This is like choosing ideas that together make a good story, instead of just picking the absolute best ones. It helps the text be both interesting and sensible. The default value is `0.95`*
+
+   *- The `--neuron.top_k` It's like having a lot of ideas but only picking the few best ones to talk about. This makes the text make more sense.  Reducing the number ensures that the model's choices are among the most probable, leading to more coherent text. The default value is `50`*
+
+   *- The `--neuron.system_prompt` flag is used to specify the prompt for the model. The default value is `"YYou are an AI that excels in solving mathematical problems. Always provide responses concisely and provide helpful explanations through step-by-step solutions. You are honest about things you don't know."`*
+
+   Some useful pm2 commands:
+
+   ```bash
+   pm2 status # This will show you the status of all pm2 processes
+   pm2 logs s5_openai_miner # This will show you the logs of the miner
+   pm2 stop {process_id} # This will stop the process
+   ```
 
 ---
 

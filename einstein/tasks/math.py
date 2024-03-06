@@ -6,36 +6,34 @@ from einstein.tasks import Task
 
 @dataclass
 class MathTask(Task):
+    name = "math"
+    desc = "Solve math problems with varying complexity"
+    goal = "Find the solution to the math problem"
+    
     reward_definition = [
         # Dynamically assign reward models based on problem complexity
-        dict(name='float_diff', weight=0.5),
-        dict(name='advanced_math', weight=0.5),
+        dict(name='advanced_math', weight=1.0),
     ]
     penalty_definition = []
+    
+    static_reference = True
+    static_query = True
+
 
     def __init__(self, llm_pipeline, context, create_reference=True):
-        self.name = "math"
-        self.desc = "Solve math problems with varying complexity"
-        self.goal = "Find the solution to the math problem"
         self.context = context
+        self.reference = context.extra['solution']
 
         # Handle both numeric and symbolic references
-        reference = context["solution"]
-        if isinstance(reference, str) and not reference.replace('.', '', 1).isdigit():
+        if isinstance(self.reference, str) and not self.reference.replace('.', '', 1).isdigit():
             self.reference_type = 'symbolic'
         else:
             self.reference_type = 'numeric'
-            try:
-                reference = float(reference)
-            except ValueError:
-                raise ValueError(f"Solution {reference} is not valid.")
         
-        self.query = f"How can I solve this math problem: {context['problem']}?"
-        self.reference = str(reference)
-        self.topic = context["topic"]
-        self.subtopic = context["subtopic"]
-        self.tags = context.get("tags", [])
-        self.static_reference = True
-        self.static_query = True
-
+        # Improved concatenation using f-string for better readability and performance
+        self.query = "How can I solve the following problem, " + context.content + "? Make sure to include the whole problem when you ask your question."
+        self.reference = context.extra['solution']
+        self.topic = context.title
+        self.subtopic = context.topic
+        self.tags = context.tags
 

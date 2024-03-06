@@ -6,4 +6,5 @@ from .reward import (
     RewardModelTypeEnum,
 )
 
-from .pipeline import RewardPipeline
+from .advanced_math import AdvancedMathModel
+from .pipeline import RewardPipeline, REWARD_MODELS
