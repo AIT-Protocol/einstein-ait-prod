@@ -1,8 +1,10 @@
 import subprocess
 from multiprocessing import Process
 
-miner_coldkey = 'miner'
-validator_coldkey = 'validator'
+# miner_coldkey = 'miner'
+miner_coldkey = 'default'
+# validator_coldkey = 'validator'
+validator_coldkey = 'default'
 netuid = 78
 network = 'test'
 
