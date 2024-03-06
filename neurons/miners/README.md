@@ -282,34 +282,72 @@ python neurons/miners/openai/miner.py --netuid 5 --subtensor.network finney --wa
 #### On localhost using PM2:
 > Note: When using PM2, you will run both miner and validator. Therefore, if you just follow this guide, you will get an error because you have not set up a validator, but you can rest assured that this error will not affect the miner running.
 
-*Testnet:* 
-```
-pm2 start run.sh --name s78_validator_autoupdate --wallet.name <your miner wallet name> --wallet.hotkey <your miner hotkey name> --netuid 78 --subtensor.network test
-```
-*Mainnet:*
-```
-pm2 start run.sh --name s5_validator_autoupdate --wallet.name <your miner wallet name> --wallet.hotkey <your miner hotkey name> --netuid 5 --subtensor.network finney
-```
-You can check logs by this command: ```pm2 log```
+   ```bash
+   pm2 start neurons/miners/openai/miner.py --name s5_openai_miner \
+   --interpreter python \
+   -- --netuid <78 / 5> \ #78 is our testnet and 5 is our mainnet
+   --subtensor.network <test/finney> \
+   --wallet.name <your miner wallet> \
+   --wallet.hotkey <your miner hotkey> \
+   --logging.debug \
+   # WHAT BELOW IS OPTIONAL, PLEASE READ THE DESCRIPTIONS BELOW
+   --neuron.model_id gpt-3.5-turbo-0125 \
+   --neuron.max_tokens 1024 \
+   --neuron.temperature 0.9 \
+   --neuron.top_p 0.9 \
+   --neurom.top_k 50 \
+   --neuron.system_prompt "your prompt engineering"
+   --numpal.verbose.off \ # Set this if you want to disable verbose mode for NumPAL
+   --numpal.off \ # Set this if you want to disable NumPAL (Not recommended)
+   ```
 
-You can flush logs by this command: ```pm2 flush```
+   Example of running the miner with on the testnet with NumPAL on and verbose mode off:
 
-- <mark>neuron.model_id</mark>: is used to specify the model you want to use. 
-  >Default = gpt3.5-turbo
-- <mark>neuron.system_prompt</mark>: prompt engineering, replace the place to change the model's personas, how they response, custom knowledge,...etc.    
-  >Default = "You are an AI that excels in solving mathematical problems. Always provide responds concisely and helpfully explanations and step-by-step solutions. You are honest about things you don't know."
+  ```bash
+  pm2 start neurons/miners/openai/miner.py --name s78_openai_miner \
+  --interpreter python \
+  -- --netuid 78 \
+  --subtensor.network test \
+  --wallet.name <your miner wallet> \
+  --wallet.hotkey <your miner hotkey> \
+  --logging.debug \
+  --neuron.model_id gpt-3.5-turbo-0125 \
+  --neuron.max_tokens 1024 \
+  --neuron.temperature 0.9 \
+  --neuron.top_p 0.9 \
+  --neurom.top_k 50 \
+  --neuron.system_prompt "your prompt engineering"
+  --numpal.verbose.off
+  ```
 
-- <mark>neuron.max_tokens</mark>: the max number you can input here is depend on the model provider, so in our case, check openai model page. max_tokens refers to the maximum number of pieces of text the model can consider at one time. Think of it as limiting how much the model can "read" or "write" in one go. This helps manage the model's memory and ensures it runs smoothly.
-  >Default = 256
 
-- <mark>neuron.temperature</mark> {float numbers from 0 to 1}: Adjusts the creativity, how predictable or surprising the responses are. A lower temperature makes the model's responses more predictable and conservative, while a higher temperature encourages more creativity and diversity.
-  >Default = 0.7
+   *NOTE: Your wallet and wallet's hotkey must be created using the bittensor-cli and registered to the netuid 78 (our testnet uid). Additionally, you can run the validator in trace mode by using `--logging.trace` instead of `--logging.debug`*
 
-- <mark>neuron.top_k</mark> {0 means off so any number higher than 0}: It's like having a lot of ideas but only picking the few best ones to talk about. This makes the text make more sense.  Reducing the number ensures that the model's choices are among the most probable, leading to more coherent text.
-  >Default = 50
+   *- The `--numpal.off` flag is used to disable NumPAL. NumPAL is a feature that allows the miner to solve mathematical problems using the NumPAL supercharger model. Set this flag if you want to disable NumPAL.*
 
-- <mark>neuron.top_p</mark> {float numbers from 0 to 1} : This is like choosing ideas that together make a good story, instead of just picking the absolute best ones. It helps the text be both interesting and sensible.
-  >Default = 0.95
+   *- The `--numpal.verbose.off` flag is used to disable logging mode for NumPAL. Set this flag if you want to disable logging mode for NumPAL.*
+
+   *- The `--neuron.model_id` flag is used to specify the model you want to use. The default value is `gpt3.5-turbo` which is the latest model from OpenAI, you can find out more about the models [here](https://platform.openai.com/docs/models/)*
+
+   *- The `--neuron.max_tokens` flag is used to specify the maximum number of tokens the model can generate which is the length of the response. The default value is `256`*
+
+   *- The `--neuron.temperature` flag is used to specify the temperature of the model which controls the creativeness of the model. The default value is `0.7`*
+
+   *- The `--neuron.top_p` This is like choosing ideas that together make a good story, instead of just picking the absolute best ones. It helps the text be both interesting and sensible. The default value is `0.95`*
+
+   *- The `--neuron.top_k` It's like having a lot of ideas but only picking the few best ones to talk about. This makes the text make more sense.  Reducing the number ensures that the model's choices are among the most probable, leading to more coherent text. The default value is `50`*
+
+   *- The `--neuron.system_prompt` flag is used to specify the prompt for the model. The default value is `"YYou are an AI that excels in solving mathematical problems. Always provide responses concisely and provide helpful explanations through step-by-step solutions. You are honest about things you don't know."`*
+
+   Some useful pm2 commands:
+
+   ```bash
+   pm2 status # This will show you the status of all pm2 processes
+   pm2 logs s5_openai_miner # This will show you the logs of the miner
+   pm2 stop {process_id} # This will stop the process
+   pm2 log # This will show you the logs of all pm2 processes
+   pm2 flush # This will clear the logs of all pm2 processes.
+   ```
 
 You can add the parsers above to optimize for miners
 
