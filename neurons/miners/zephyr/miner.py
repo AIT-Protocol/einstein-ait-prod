@@ -5,11 +5,13 @@ import bittensor as bt
 
 from neurons.miner import Miner
 from einstein.protocol import CoreSynapse
-from einstein.llm import load_pipeline
-from einstein.llm import HuggingFaceLLM
-
+from langchain_core.messages import SystemMessage, HumanMessage
+from langchain_community.llms.huggingface_pipeline import HuggingFacePipeline
+from langchain.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import StrOutputParser
 
 from NumPAL import NumPAL
+
 import warnings
 
 warnings.filterwarnings("ignore")
@@ -27,9 +29,13 @@ class ZephyrMiner(Miner):
         if self.config.neuron.load_quantized:
             bt.logging.info("Loading quantized model...")
             model_kwargs = dict(
+                max_new_tokens=self.config.neuron.max_tokens,
+                temperature=self.config.neuron.temperature,
                 torch_dtype=torch.float16,
+                top_k=self.config.neuron.top_k,# default :50
+                top_p=self.config.neuron.top_p,# default :0.95
                 load_in_8bit=True,
-            )
+                )
 
         if not self.config.numpal.off:
             bt.logging.info("⚡️ \033[1;33mSupercharging the model with NumPAL...\033[0m")
@@ -45,15 +51,15 @@ class ZephyrMiner(Miner):
 
             if self.config.neuron.load_quantized:
                 self.identity_tags += ("8bits_quantization",)
-
-        self.llm_pipeline = load_pipeline(
-            # model_id=self.config.neuron.model_id,
-            model_id='HuggingFaceH4/zephyr-7b-beta',
-            torch_dtype=torch.float16,
-            device=self.device,
-            mock=self.config.mock,
-            model_kwargs=model_kwargs,
-        )
+        
+        model_id = "HuggingFaceH4/zephyr-7b-beta"
+        self.llm_pipeline = HuggingFacePipeline.from_model_id(
+            model_id=model_id,
+            task="text-generation",
+            pipeline_kwargs=model_kwargs,
+            device=0
+            )
+        
         self.system_prompt = self.config.neuron.system_prompt
 
     async def forward(self, synapse: CoreSynapse) -> CoreSynapse:
@@ -74,56 +80,61 @@ class ZephyrMiner(Miner):
         try:
             t0 = time.time()
             bt.logging.debug(f"📧 Message received, forwarding synapse: {synapse}")
+
+            question = synapse.messages[-1]
+            
             if not self.config.numpal.off:
 
-                question = synapse.messages[-1]
-                self.system_prompt = "You are an advanced Math AI Solver. Your task is to provide users with clear and concise explanations and answers to their math questions. When a question is presented to you, utilize the provided reference question and result to generate an insightful concise explanation and the correct answer. If the reference lacks a result or contains an error, independently calculate the answer based on the question given in the reference. Your goal is to ensure the user not only receives the correct answer but also understands the underlying mathematical concepts and processes involved."
                 bt.logging.debug("\033[1;32m💬 Running Math Code on NumPAL\033[0m")
                 verbose_on = not self.config.numpal.verbose.off
                 pal = NumPAL.from_math_prompt(self.llm_pipeline, verbose=verbose_on)
                 q_r = pal.invoke(question)
+                
+                prompt = "You are an advanced Math AI Solver. Your task is to provide users with clear and concise explanations and answers to their math questions. When a question is presented to you, utilize the provided reference question and result to generate an insightful concise explanation and the correct answer. If the reference lacks a result or contains an error, independently calculate the answer based on the question given in the reference. Your goal is to ensure the user not only receives the correct answer but also understands the underlying mathematical concepts and processes involved."
+                
+                messages = [
+                    SystemMessage(
+                        content=prompt
+                        ),
+                    HumanMessage(
+                        content=str(q_r)
+                        ),
+                    ]
 
-                response = (HuggingFaceLLM(
-                    llm_pipeline=self.llm_pipeline,
-                    system_prompt=self.system_prompt,
-                    max_new_tokens=self.config.neuron.max_tokens, # default :256
-                    do_sample=self.config.neuron.do_sample,
-                    temperature=self.config.neuron.temperature,# default :0.7 ( the higher the more randomness and creativity )
-                    top_k=self.config.neuron.top_k,# default :50
-                    top_p=self.config.neuron.top_p,# default :0.95
-                ).
-                query(
-                    message = q_r,
-                    role="user",
-                    disregard_system_prompt=False,
-                    cleaner=None,
-                ))
+                response = self.llm_pipeline.invoke(messages)
+                
             else:
-                response = (HuggingFaceLLM(
-                    llm_pipeline=self.llm_pipeline,
-                    system_prompt=self.system_prompt,
-                    max_new_tokens=self.config.neuron.max_tokens, # default :256
-                    do_sample=self.config.neuron.do_sample,
-                    temperature=self.config.neuron.temperature,# default :0.7 ( the higher the more randomness and creativity )
-                    top_k=self.config.neuron.top_k,# default :50
-                    top_p=self.config.neuron.top_p,# default :0.95
-                ).
-                query(
-                    message = synapse.messages[-1],
-                    role="user",
-                    disregard_system_prompt=False,
-                    cleaner=None,
-                ))
+                prompt = ChatPromptTemplate.from_messages(
+                    [("system", self.system_prompt), ("user", "{input}")]
+                )
+                chain = prompt | self.llm_pipeline | StrOutputParser()
+
+                role = synapse.roles[-1]
+                message = synapse.messages[-1]
+
+                bt.logging.debug(f"💬 Querying: {prompt}")
+
+                response = chain.invoke({"role": role, "input": message})
+
             synapse.completion = response
             synapse_latency = time.time() - t0
 
-            if self.config.wandb.on:
+            if self.config.wandb.on and not self.config.numpal.on:
                 self.log_event(
                     timing=synapse_latency,
-                    prompt=question,
+                    prompt=message,
                     completion=response,
-                    system_prompt=self.system_prompt,
+                    system_prompt=self.system_prompt
                 )
+
+            if self.config.wandb.on and self.config.numpal.on:
+                self.log_event(
+                    timing=synapse_latency,
+                    prompt=message,
+                    completion=response,
+                    system_prompt=prompt,
+                )
+
             bt.logging.debug(f"✅ Served Response: {response}")
             torch.cuda.empty_cache()
             self.step += 1
