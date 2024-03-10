@@ -2,13 +2,13 @@
 <div align="center">
   <h1>🧠 Einstein - AIT 🤖</h1>
 
-## **Subnet 5 🌐**
+## **Testnet uid: 78 🌐**
 
 ---
 
 ### 🚀 The Incentivized Internet <!-- omit in toc -->
 
-[Subnet 5 Discord](https://discord.gg/wVPZrVu9) • [AIT Discord](https://discord.gg/aitprotocols) • [AIT Telegram](AIT_Protocol)
+[Testnet 78 Discord](https://discord.gg/wVPZrVu9) • [AIT Discord](https://discord.gg/aitprotocols) • [AIT Telegram](AIT_Protocol)
 
 </div>
 
@@ -48,7 +48,7 @@ FINE TUNED **MINER** (`WIP`) REQUIREMENTS
 
 **OPENAI MINER** REQUIREMENTS
 
-- Python 3.8, 3.9 or 3.10
+- Python 3.9 or 3.10
 
 # 🛠️ Tools
 
@@ -107,7 +107,7 @@ Install [PM2](https://pm2.io/docs/runtime/guide/installation/) and the [`jq` pac
 
 *Disclaimer:*
 
-We encourage miners to use testnet as this gives you a risk-free playground before running on mainnet. If you require test tao, please reach out to our [Subnet 5 Discord](https://discord.gg/wVPZrVu9).
+We encourage miners to use testnet as this gives you a risk-free playground before running on mainnet. If you require test tao, please reach out to our [Testnet 78 Discord](https://discord.gg/wVPZrVu9).
 
 For miners and validators running on mainnet, we **strongly recommend** using a [local subtensor](https://github.com/opentensor/subtensor) for improved performance and security.
 
@@ -145,8 +145,8 @@ Prior to running a miner or validator, you must [create a wallet](https://github
 
    ```bash
    python neurons/validator.py \
-   --netuid < 78 / 5> \ #78 is our testnet and 5 is our mainnet
-   --subtensor.network <test/finney> \
+   --netuid 78 \
+   --subtensor.network test \
    --neuron.device cuda \
    --wallet.name <your validator wallet> \
    --wallet.hotkey <your validator hotkey> \
@@ -187,8 +187,8 @@ Running Miners is very competitive and requires a lot of resources. We encourage
    ```bash
    pm2 start neurons/miners/openai/miner.py --name s5_openai_miner \
    --interpreter python \
-   -- --netuid <78 / 5> \ #78 is our testnet and 5 is our mainnet
-   --subtensor.network <test/finney> \
+   -- --netuid 78 \
+   --subtensor.network test \
    --wallet.name <your miner wallet> \
    --wallet.hotkey <your miner hotkey> \
    --logging.debug \

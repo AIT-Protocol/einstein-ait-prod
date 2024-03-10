@@ -4,7 +4,7 @@ This repository contains a Bittensor Miner that uses langchain and OpenAI's mode
 
 ## Prerequisites
 
-- Python 3.8+
+- Python 3.9+
 - [OpenAI Python API](https://github.com/openai/openai)
 
 ## Installation
@@ -42,8 +42,8 @@ We recommend using pm2 to run the miner as it will automatically restart the min
 ```bash
 pm2 start neurons/miners/openai/miner.py --name s5_openai_miner \
 --interpreter python \
--- --netuid <78 / 5> \ #78 is our testnet and 5 is our mainnet
---subtensor.network <test/finney> \
+-- --netuid 78 \
+--subtensor.network test \
 --wallet.name <your miner wallet> \
 --wallet.hotkey <your miner hotkey> \
 --logging.debug \
