@@ -8,7 +8,7 @@
 
 ### 🚀 The Incentivized Internet <!-- omit in toc -->
 
-[Testnet 78 Discord](https://discord.gg/wVPZrVu9) • [AIT Discord](https://discord.gg/aitprotocols) • [AIT Telegram](AIT_Protocol)
+[Testnet 78 Discord](https://discord.com/invite/GvEMzStVN6) • [AIT Discord](https://discord.gg/aitprotocols) • [AIT Telegram](AIT_Protocol)
 
 </div>
 
