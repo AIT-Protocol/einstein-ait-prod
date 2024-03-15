@@ -1,4 +1,4 @@
-
+ 
 <div align="center">
   <h1>🧠 Einstein - AIT 🤖</h1>
 
@@ -165,6 +165,16 @@ Running Miners is very competitive and requires a lot of resources. We encourage
 
    1. AIT Custom API  `Work In Progress - Not yet public`
    2. [OpenAI](https://platform.openai.com/docs/introduction) (GPT variants)
+   3. [Zephyr Model](https://github.com/AIT-Protocol/einstein-ait-prod/blob/main/neurons/miners/zephyr/)
+
+### Alternative Mining Options
+
+If you're a real competitor... try setting up an alternative miner API or your own custom GPU script.
+
+Miners are able to run alternative API's for example, the from Wolfram Alpha API, or others, by going into [neruons/miners/openai/miner.py](https://github.com/AIT-Protocol/einstein-ait-prod/blob/main/neurons/miners/openai/miner.py) and editing the script for your desired model. 
+
+To run your own GPU model you can customize the script in [neurons/miners/zephyr](https://github.com/AIT-Protocol/einstein-ait-prod/blob/main/neurons/miners/zephyr/miner.py).
+
 
 ### OpenAI Miner
 
