@@ -40,7 +40,7 @@ For more configuration options related to the wallet, axon, subtensor, logging, 
 We recommend using pm2 to run the miner as it will automatically restart the miner if it crashes.
 
 ```bash
-pm2 start neurons/miners/openai/miner.py --name s5_openai_miner \
+pm2 start neurons/miners/openai/miner.py --name s3_openai_miner \
 --interpreter python \
 -- --netuid 78 \
 --subtensor.network test \
@@ -81,6 +81,6 @@ pm2 start neurons/miners/openai/miner.py --name s5_openai_miner \
 
    ```bash
    pm2 status # This will show you the status of all pm2 processes
-   pm2 logs s5_openai_miner # This will show you the logs of the miner
+   pm2 logs s3_openai_miner # This will show you the logs of the miner
    pm2 stop {process_id} # This will stop the process
    ```
