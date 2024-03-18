@@ -145,8 +145,8 @@ Prior to running a miner or validator, you must [create a wallet](https://github
 
    ```bash
    python neurons/validator.py \
-   --netuid 78 \
-   --subtensor.network test \
+   --netuid 78 or 3 \
+   --subtensor.network test or finney \
    --neuron.device cuda \
    --wallet.name <your validator wallet> \
    --wallet.hotkey <your validator hotkey> \
@@ -197,8 +197,8 @@ To run your own GPU model you can customize the script in [neurons/miners/zephyr
    ```bash
    pm2 start neurons/miners/openai/miner.py --name s3_openai_miner \
    --interpreter python \
-   -- --netuid 78 \ --netuid 3
-   --subtensor.network test \ finney
+   -- --netuid 78 or 3 \
+   --subtensor.network test or finney \
    --wallet.name <your miner wallet> \
    --wallet.hotkey <your miner hotkey> \
    --logging.debug \
