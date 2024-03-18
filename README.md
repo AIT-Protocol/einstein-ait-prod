@@ -128,7 +128,7 @@ Prior to running a miner or validator, you must [create a wallet](https://github
 3. Run the `run.sh` script which will handle running your validator and pulling the latest updates as they are issued.
 
    ```bash
-   pm2 start run.sh --name s5_validator_autoupdate -- --wallet.name <your-wallet-name> --wallet.hotkey <your-wallet-hot-key>
+   pm2 start run.sh --name s3_validator_autoupdate -- --wallet.name <your-wallet-name> --wallet.hotkey <your-wallet-hot-key>
    ```
 
    The `run.sh` script will automatically pull the latest updates from the repository and restart the validator. This is useful for keeping your validator up to date with the latest changes.
@@ -195,10 +195,10 @@ To run your own GPU model you can customize the script in [neurons/miners/zephyr
    We recommend using pm2 to run the miner as it will automatically restart the miner if it crashes.
 
    ```bash
-   pm2 start neurons/miners/openai/miner.py --name s5_openai_miner \
+   pm2 start neurons/miners/openai/miner.py --name s3_openai_miner \
    --interpreter python \
-   -- --netuid 78 \
-   --subtensor.network test \
+   -- --netuid 78 \ --netuid 3
+   --subtensor.network test \ finney
    --wallet.name <your miner wallet> \
    --wallet.hotkey <your miner hotkey> \
    --logging.debug \
@@ -235,7 +235,7 @@ To run your own GPU model you can customize the script in [neurons/miners/zephyr
 
    ```bash
    pm2 status # This will show you the status of all pm2 processes
-   pm2 logs s5_openai_miner # This will show you the logs of the miner
+   pm2 logs s3_openai_miner # This will show you the logs of the miner
    pm2 stop {process_id} # This will stop the process
    ```
 
