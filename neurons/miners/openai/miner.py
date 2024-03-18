@@ -11,15 +11,21 @@ from einstein.protocol import CoreSynapse
 from neurons.miner import Miner
 
 from langchain.prompts import ChatPromptTemplate
+from langchain_openai import ChatOpenAI
+from langchain_community.callbacks import get_openai_callback
 from langchain_core.output_parsers import StrOutputParser
+from langchain_core.messages import SystemMessage, HumanMessage
+from dotenv import load_dotenv, find_dotenv
+
 from langchain.chat_models import ChatOpenAI
 from dotenv import load_dotenv, find_dotenv
-from langchain.callbacks import get_openai_callback
+
+# Supercharger:
+from NumPAL import NumPAL
 
 import warnings
 
 warnings.filterwarnings("ignore")
-
 
 class OpenAIMiner(Miner):
     """Langchain-based miner which uses OpenAI's API as the LLM.
@@ -38,6 +44,17 @@ class OpenAIMiner(Miner):
         super().__init__(config=config)
 
         bt.logging.info(f"Initializing with model {self.config.neuron.model_id}...")
+                
+        if not self.config.numpal.off:
+            bt.logging.info("⚡️ \033[1;33mSupercharging the model with NumPAL...\033[0m")
+        else:
+            bt.logging.info(f"NumPAL is turned off...")
+        
+        if not self.config.numpal.verbose.off:
+            bt.logging.info(f"NumPAL verbose mode is turned on...")
+        else:
+            bt.logging.info(f"NumPAL verbose mode is turned off...")
+        
 
         if self.config.wandb.on:
             self.identity_tags = ("openai_miner",) + (self.config.neuron.model_id,)
@@ -53,7 +70,10 @@ class OpenAIMiner(Miner):
             temperature=self.config.neuron.temperature,
         )
 
-        self.system_prompt = "You are an AI that excels in solving mathematical problems. Always provide responds concisely and helpfully explanations and step-by-step solutions. You are honest about things you don't know."
+        
+        system_prompt = self.config.neuron.system_prompt
+        self.system_prompt = system_prompt
+        
         self.accumulated_total_tokens = 0
         self.accumulated_prompt_tokens = 0
         self.accumulated_completion_tokens = 0
@@ -105,22 +125,39 @@ class OpenAIMiner(Miner):
                 list_msg = message.split("|")
                 message_type = list_msg.pop()
                 question = "|".join(list_msg)
+                prompt = self.system_prompt or "You are an advanced Math AI Solver. Your task is to provide users with clear and concise explanations and answers to their math questions. When a question is presented to you, utilize the provided reference question and result to generate an insightful concise explanation and the correct answer. If the reference lacks a result or contains an error, independently calculate the answer based on the question given in the reference. Your goal is to ensure the user not only receives the correct answer but also understands the underlying mathematical concepts and processes involved."
 
                 if message_type.lower() == "regular":
-                    self.system_prompt = "Please you can awnser the question."
+                    prompt = "Please you can awnser the question."
                 elif message_type.lower() == "analytic":
-                    self.system_prompt = (
-                        "Please provide statistical graphs of this data"
+                    prompt = "Please provide statistical graphs of this data"
+
+                if not self.config.numpal.off:
+
+                    # Initialize NumPAL and solve the math problem
+                    bt.logging.debug("\033[1;32m💬 Running Math Code on NumPAL\033[0m")
+                    verbose_on = not self.config.numpal.verbose.off
+                    pal = NumPAL.from_math_prompt(self.model, verbose=verbose_on)
+                    q_r = pal.invoke(question)
+
+                    messages = [
+                        SystemMessage(
+                            content=prompt
+                        ),
+                        HumanMessage(
+                            content=str(q_r)
+                        ),
+                    ]
+                    response = self.model.invoke(messages)
+
+                else:
+                    prompt = ChatPromptTemplate.from_messages(
+                        [("system", prompt), ("user", "{input}")]
                     )
+                    chain = prompt | self.model | StrOutputParser()
+                    bt.logging.info(f"💬 Querying openai: {chain}")
+                    response = chain.invoke({"role": role, "input": question})
 
-                prompt = ChatPromptTemplate.from_messages(
-                    [("system", self.system_prompt), ("user", "{input}")]
-                )
-
-                chain = prompt | self.model | StrOutputParser()
-
-                bt.logging.info(f"💬 Querying openai: {chain}")
-                response = chain.invoke({"role": role, "input": question})
                 bt.logging.info(f"📧 Response received: {response}")
 
                 synapse.completion = response
