@@ -8,7 +8,7 @@
 
 ### 🚀 The Incentivized Internet <!-- omit in toc -->
 
-[Testnet 78 Discord](https://discord.com/invite/GvEMzStVN6) • [AIT Discord](https://discord.gg/aitprotocols) • [AIT Telegram](AIT_Protocol)
+[Discord](https://discord.com/invite/GvEMzStVN6) • [AIT Discord](https://discord.gg/aitprotocols) • [AIT Telegram](AIT_Protocol)
 
 </div>
 
@@ -145,15 +145,15 @@ Prior to running a miner or validator, you must [create a wallet](https://github
 
    ```bash
    python neurons/validator.py \
-   --netuid 78 or 3 \
-   --subtensor.network test or finney \
+   --netuid 78 or 3 \ # 78 for testnet and 3 for mainnet
+   --subtensor.network test or finney \ # test for testnet and finney for mainnet
    --neuron.device cuda \
    --wallet.name <your validator wallet> \
    --wallet.hotkey <your validator hotkey> \
    --logging.debug
    ```
 
-   *NOTE: Your wallet and wallet's hotkey must be created using the bittensor-cli and registered to the netuid 78 (our testnet uid). Additionally, you can run the validator in trace mode by using `--logging.trace` instead of `--logging.debug`*
+   *NOTE: Your wallet and wallet's hotkey must be created using the bittensor-cli and registered to the netuid 78 (our testnet uid) or 3 (our mainnet uid). Additionally, you can run the validator in trace mode by using `--logging.trace` instead of `--logging.debug`*x
 
 ---
 
@@ -197,8 +197,8 @@ To run your own GPU model you can customize the script in [neurons/miners/zephyr
    ```bash
    pm2 start neurons/miners/openai/miner.py --name s3_openai_miner \
    --interpreter python \
-   -- --netuid 78 or 3 \
-   --subtensor.network test or finney \
+   -- --netuid 78 or 3 \ # 78 for testnet and 3 for mainnet
+   --subtensor.network test or finney \ # test for testnet and finney for mainnet
    --wallet.name <your miner wallet> \
    --wallet.hotkey <your miner hotkey> \
    --logging.debug \
@@ -213,7 +213,7 @@ To run your own GPU model you can customize the script in [neurons/miners/zephyr
    --numpal.off \ # Set this if you want to disable NumPAL (Not recommended)
    ```
 
-   *NOTE: Your wallet and wallet's hotkey must be created using the bittensor-cli and registered to the netuid 78 (our testnet uid). Additionally, you can run the validator in trace mode by using `--logging.trace` instead of `--logging.debug`*
+   *NOTE: Your wallet and wallet's hotkey must be created using the bittensor-cli and registered to the netuid 78 (our testnet uid) or 3 (our mainnet uid). Additionally, you can run the validator in trace mode by using `--logging.trace` instead of `--logging.debug`*
 
    *- The `--numpal.off` flag is used to disable NumPAL. NumPAL is a feature that allows the miner to solve mathematical problems using the NumPAL supercharger model. Set this flag if you want to disable NumPAL.*
 
