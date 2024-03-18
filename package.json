@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "openssl": "^2.0.0"
+  }
+}
