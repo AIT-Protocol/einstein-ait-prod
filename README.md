@@ -1,8 +1,8 @@
  
 <div align="center">
-  <h1>🧠 Einstein - AIT 🤖</h1>
+  <h1>🧠 SN3: Einstein - AIT 🤖</h1>
 
-## **Testnet uid: 78 🌐**
+## **Testnet uid: 78 \ Mainnet uid: 3🌐**
 
 ---
 
