@@ -108,6 +108,35 @@ class CoreSynapse(bt.Synapse):
         allow_mutation=False,
     )
 
+class ClientRequestSynapse(bt.Synapse):
+    question_text: str = pydantic.Field(
+        ...,
+        title="Question Text",
+        description="",
+        allow_mutation=False
+    )
+
+    question_file: str = pydantic.Field(
+        ...,
+        title="Question File",
+        description="",
+        allow_mutation=False
+    )
+
+    question_markdown: str = pydantic.Field(
+        ...,
+        title="Question Markdown",
+        description="",
+        allow_mutation=False
+    )
+
+    question_type: str = pydantic.Field(
+        ...,
+        title="Question Type",
+        description="",
+        allow_mutation=False
+    )
+
 
 class StreamCoreSynapse(bt.StreamingSynapse):
     """

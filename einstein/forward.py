@@ -2,9 +2,8 @@ import time
 import sys
 import numpy as np
 import bittensor as bt
-from time import sleep
 
-from typing import List
+from typing import List, Callable, Awaitable
 from einstein.agent import HumanAgent
 from einstein.dendrite import DendriteResponseEvent
 from einstein.conversation import create_task
@@ -12,6 +11,8 @@ from einstein.protocol import CoreSynapse
 from einstein.rewards import RewardResult
 from einstein.utils.uids import get_random_uids
 from einstein.utils.logging import log_event
+
+ForwardFn = Callable[[CoreSynapse], Awaitable[CoreSynapse]]
 
 
 async def run_step(
@@ -31,15 +32,16 @@ async def run_step(
         exclude (list, optional): The list of uids to exclude from the query. Defaults to [].
     """
 
-    bt.logging.debug("run_step", agent.task.name)
-
     # Record event start time.
     start_time = time.time()
     # Get the list of uids to query for this step.
     uids = get_random_uids(self, k=k, exclude=exclude or []).to(self.device)
+    # uids = [0]
 
     axons = [self.metagraph.axons[uid] for uid in uids]
+    bt.logging.info(f"[DEBUG] axons: {axons}")
     # Make calls to the network with the prompt.
+    bt.logging.info(f"Calls to the network with the prompt: {agent.challenge}")
     responses: List[CoreSynapse] = await self.dendrite(
         axons=axons,
         synapse=CoreSynapse(roles=["user"], messages=[agent.challenge]),
@@ -72,7 +74,7 @@ async def run_step(
     agent.update_progress(
         top_reward=top_reward,
         top_response=top_response,
-        )
+    )
 
     self.update_scores(reward_result.rewards, uids)
 
@@ -85,15 +87,17 @@ async def run_step(
         **response_event.__state_dict__(),
     }
 
+    # Esol commented out the following line
     log_event(self, event)
-
-    return event
+    return event, top_response
 
 
 async def forward(self):
     bt.logging.info("🚀 Starting forward loop...")
 
     while True:
+        # get data in queue
+        synapse = self.api_queue.get()
         bt.logging.info(
             f"📋 Selecting task... from {self.config.neuron.tasks} with distribution {self.config.neuron.task_p}"
         )
@@ -106,35 +110,46 @@ async def forward(self):
         #     self.config.neuron.tasks, p=self.config.neuron.task_p
         # )
         task_name = "math"
-        bt.logging.info(f"\033[1;32;40m📋 Creating {task_name} task...\033[0m")
+        bt.logging.info(f"📋 Creating {task_name} task... ")
         try:
-            task = create_task(llm_pipeline=self.llm_pipeline, task_name=task_name)
+            task = create_task(
+                llm_pipeline=self.llm_pipeline,
+                task_name=task_name,
+                problem=synapse.input_synapse.messages[0],
+            )
             break
         except Exception as e:
             bt.logging.error(
-                f"\033[1;31;40mFailed to create {task_name} task. {sys.exc_info()}. Skipping to next task. \033[0m"
+                f"Failed to create {task_name} task. {sys.exc_info()}. Skipping to next task."
             )
-            bt.logging.info(f"Resetting task creation function...")
-            sleep(5)
+            synapse.event.set()
             continue
 
     # Create random agent with task, topic, profile...
-    bt.logging.info(f"\033[1;32;40m🤖 Creating agent for {task_name} task...\033[0m")
+    bt.logging.info(f"🤖 Creating agent for {task_name} task... ")
     agent = HumanAgent(
         task=task, llm_pipeline=self.llm_pipeline, begin_conversation=True
     )
 
+    bt.logging.info(f"synapse message: {synapse.input_synapse.messages}")
+    bt.logging.info(f"agent challenge: {agent.challenge}")
+    bt.logging.info(f"task problem: {task}")
     rounds = 0
     exclude_uids = []
+    agent.challenge = synapse.input_synapse.messages[0]
     while not agent.finished:
         # when run_step is called, the agent updates its progress
-        event = await run_step(
+        event, top_response = await run_step(
             self,
             agent,
             k=self.config.neuron.sample_size,
             timeout=self.config.neuron.timeout,
             exclude=exclude_uids,
         )
+        synapse.output_synapse = CoreSynapse(
+            roles=["validator"], messages=[top_response], completion=top_response
+        )
+        synapse.event.set()
         exclude_uids += event["uids"]
         task.complete = True
 

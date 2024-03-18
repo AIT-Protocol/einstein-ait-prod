@@ -11,14 +11,11 @@ from einstein.protocol import CoreSynapse
 from neurons.miner import Miner
 
 from langchain.prompts import ChatPromptTemplate
-from langchain_openai import ChatOpenAI
-from langchain_community.callbacks import get_openai_callback
-from dotenv import load_dotenv, find_dotenv
 from langchain_core.output_parsers import StrOutputParser
-from langchain_core.messages import SystemMessage, HumanMessage
+from langchain.chat_models import ChatOpenAI
+from dotenv import load_dotenv, find_dotenv
+from langchain.callbacks import get_openai_callback
 
-# Supercharger:
-from NumPAL import NumPAL
 import warnings
 
 warnings.filterwarnings("ignore")
@@ -41,17 +38,7 @@ class OpenAIMiner(Miner):
         super().__init__(config=config)
 
         bt.logging.info(f"Initializing with model {self.config.neuron.model_id}...")
-        
-        if not self.config.numpal.off:
-            bt.logging.info("⚡️ \033[1;33mSupercharging the model with NumPAL...\033[0m")
-        else:
-            bt.logging.info(f"NumPAL is turned off...")
-        
-        if not self.config.numpal.verbose.off:
-            bt.logging.info(f"NumPAL verbose mode is turned on...")
-        else:
-            bt.logging.info(f"NumPAL verbose mode is turned off...")
-        
+
         if self.config.wandb.on:
             self.identity_tags = ("openai_miner",) + (self.config.neuron.model_id,)
 
@@ -65,10 +52,8 @@ class OpenAIMiner(Miner):
             max_tokens=self.config.neuron.max_tokens,
             temperature=self.config.neuron.temperature,
         )
-        
-        system_prompt = self.config.neuron.system_prompt
-        self.system_prompt = system_prompt
-        
+
+        self.system_prompt = "You are an AI that excels in solving mathematical problems. Always provide responds concisely and helpfully explanations and step-by-step solutions. You are honest about things you don't know."
         self.accumulated_total_tokens = 0
         self.accumulated_prompt_tokens = 0
         self.accumulated_completion_tokens = 0
@@ -115,47 +100,33 @@ class OpenAIMiner(Miner):
                 t0 = time.time()
                 bt.logging.debug(f"📧 Message received, forwarding synapse: {synapse}")
 
-                if not self.config.numpal.off:
+                role = synapse.roles[-1]
+                message = synapse.messages[-1]
+                list_msg = message.split("|")
+                message_type = list_msg.pop()
+                question = "|".join(list_msg)
 
-                    math_question = synapse.messages[-1]
-
-                    # Initialize NumPAL and solve the math problem
-                    bt.logging.debug("\033[1;32m💬 Running Math Code on NumPAL\033[0m")
-                    verbose_on = not self.config.numpal.verbose.off
-                    pal = NumPAL.from_math_prompt(self.model, verbose=verbose_on)
-                    q_r = pal.invoke(math_question)
-
-                    prompt = "You are an advanced Math AI Solver. Your task is to provide users with clear and concise explanations and answers to their math questions. When a question is presented to you, utilize the provided reference question and result to generate an insightful concise explanation and the correct answer. If the reference lacks a result or contains an error, independently calculate the answer based on the question given in the reference. Your goal is to ensure the user not only receives the correct answer but also understands the underlying mathematical concepts and processes involved."
-                    
-                    messages = [
-                        SystemMessage(
-                            content=prompt
-                        ),
-                        HumanMessage(
-                            content=str(q_r)
-                        ),
-                    ]
-
-                    response = self.model.invoke(messages)
-
-                else:
-
-                    prompt = ChatPromptTemplate.from_messages(
-                        [("system", self.system_prompt), ("user", "{input}")]
+                if message_type.lower() == "regular":
+                    self.system_prompt = "Please you can awnser the question."
+                elif message_type.lower() == "analytic":
+                    self.system_prompt = (
+                        "Please provide statistical graphs of this data"
                     )
-                    chain = prompt | self.model | StrOutputParser()
 
-                    role = synapse.roles[-1]
-                    message = synapse.messages[-1]
+                prompt = ChatPromptTemplate.from_messages(
+                    [("system", self.system_prompt), ("user", "{input}")]
+                )
 
-                    bt.logging.debug(f"💬 Querying openai: {prompt}")
+                chain = prompt | self.model | StrOutputParser()
 
-                    response = chain.invoke({"role": role, "input": message})
+                bt.logging.info(f"💬 Querying openai: {chain}")
+                response = chain.invoke({"role": role, "input": question})
+                bt.logging.info(f"📧 Response received: {response}")
 
                 synapse.completion = response
                 synapse_latency = time.time() - t0
 
-                if self.config.wandb.on and not self.config.numpal.on:
+                if self.config.wandb.on:
                     self.log_event(
                         timing=synapse_latency,
                         prompt=message,
@@ -163,19 +134,8 @@ class OpenAIMiner(Miner):
                         system_prompt=self.system_prompt,
                         extra_info=self.get_cost_logging(cb),
                     )
-                
-                if self.config.wandb.on and self.config.numpal.on:
-                    self.log_event(
-                        timing=synapse_latency,
-                        prompt=math_question,
-                        completion=response,
-                        system_prompt=prompt,
-                        extra_info=self.get_cost_logging(cb),
-                    )
 
-            bt.logging.debug(f"\033[1;32m✅ Served Response: \033[0m {response}")
-            self.step += 1
-
+            bt.logging.debug(f"✅ Served Response: {response}")
             return synapse
         except Exception as e:
             bt.logging.error(f"Error in forward: {e}")
@@ -190,7 +150,7 @@ class OpenAIMiner(Miner):
 if __name__ == "__main__":
     with OpenAIMiner() as miner:
         while True:
-            miner.log_status()
+            bt.logging.info("Miner running...", time.time())
             time.sleep(5)
 
             if miner.should_exit:
