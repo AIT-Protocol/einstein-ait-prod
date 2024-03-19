@@ -124,6 +124,8 @@ class OpenAIMiner(Miner):
                     verbose_on = not self.config.numpal.verbose.off
                     pal = NumPAL.from_math_prompt(self.model, verbose=verbose_on)
                     q_r = pal.invoke(math_question)
+                    # Save the result from NumPAL to self.pal_result
+                    synapse.pal_result = q_r['result']
 
                     prompt = """
                     You are an advanced Math AI Solver. Your task is to provide users with clear and concise explanations and answers to their math questions. When a question is presented to you, utilize the provided reference question and result to generate an insightful concise explanation and the correct answer. If the reference lacks a result or contains an error, independently calculate the answer based on the question given in the reference. Your goal is to ensure the user not only receives the correct answer but also understands the underlying mathematical concepts and processes involved.
@@ -153,7 +155,7 @@ class OpenAIMiner(Miner):
                     message = synapse.messages[-1]
 
                     bt.logging.debug(f"💬 Querying openai: {prompt}")
-
+                    synapse.pal_result=None
                     response = chain.invoke({"role": role, "input": message})
 
                 synapse.completion = response

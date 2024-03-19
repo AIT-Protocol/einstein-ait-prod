@@ -150,7 +150,7 @@ class BaseRewardModel(ABC):
 
         t0 = time.time()
         batch_rewards_output = self.reward(
-            reference, response_event.completions
+            reference,response_event.pal_results, response_event.completions
         )
         batch_rewards_time = time.time() - t0
 
