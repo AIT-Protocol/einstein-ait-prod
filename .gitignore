@@ -168,3 +168,7 @@ DS_Store
 .DS_Store
 *.ipynb_checkpoints
 *.ipynb
+
+# Benchmarking
+benchmarking/
+```

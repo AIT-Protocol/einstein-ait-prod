@@ -62,7 +62,7 @@ def add_args(cls, parser):
     Adds relevant arguments to the parser for operation.
     """
     # Netuid Arg: The netuid of the subnet to connect to.
-    parser.add_argument("--netuid", type=int, help="Subnet netuid", default=5)
+    parser.add_argument("--netuid", type=int, help="Subnet netuid", default=3)
 
     parser.add_argument(
         "--neuron.device",
@@ -174,7 +174,14 @@ def add_miner_args(cls, parser):
         "--neuron.system_prompt",
         type=str,
         help="The system prompt to use for the miner.",
-        default="You are an AI that excels in solving mathematical problems. Always provide responses concisely and provide helpful explanations through step-by-step solutions. You are honest about things you don't know.",
+        default="""
+        You are an advanced Math AI Solver. Your task is to provide users with clear and concise explanations 
+        and answers to their math questions. When a question is presented to you, utilize the provided reference 
+        question and result to generate an insightful concise explanation and the correct answer. If the reference 
+        lacks a result or contains an error, independently calculate the answer based on the question given in 
+        the reference. Your goal is to ensure the user not only receives the correct answer but also understands 
+        the underlying mathematical concepts and processes involved.
+        """,
     )
 
     parser.add_argument(
