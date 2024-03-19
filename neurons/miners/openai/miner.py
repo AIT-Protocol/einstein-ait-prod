@@ -67,7 +67,12 @@ class OpenAIMiner(Miner):
         )
         
         system_prompt = self.config.neuron.system_prompt
-        self.system_prompt = system_prompt
+        self.system_prompt = system_prompt + """\nMandatory:
+        - If the answer is a symbol, you must say 'So the final answer is: (that symbol)'.
+        - Unless not symbol, you always end the entire sentence with 'So the final answer is: (the answer)'
+        """
+        
+        bt.logging.info(f'Your current system prompt is: {self.system_prompt}')
         
         self.accumulated_total_tokens = 0
         self.accumulated_prompt_tokens = 0
@@ -114,62 +119,45 @@ class OpenAIMiner(Miner):
             with get_openai_callback() as cb:
                 t0 = time.time()
                 bt.logging.debug(f"📧 Message received, forwarding synapse: {synapse}")
-
+                
+                # Create a chain of operations to process the input
+                prompt = ChatPromptTemplate.from_messages(
+                    [("system", self.system_prompt), ("user", "{input}")]
+                    )
+                
+                chain = prompt | self.model | StrOutputParser()
+                
+                role = synapse.roles[-1]
+                
+                # Get the math question from the last message
+                math_question = synapse.messages[-1]
+                
+                # If NumPAL is turned on, use it to process the math question
                 if not self.config.numpal.off:
 
-                    math_question = synapse.messages[-1]
-
-                    # Initialize NumPAL and solve the math problem
-                    bt.logging.debug("\033[1;32m💬 Running Math Code on NumPAL\033[0m")
+                    bt.logging.debug("\033[1;32m💬 Running Math script on NumPAL\033[0m")
                     verbose_on = not self.config.numpal.verbose.off
-                    pal = NumPAL.from_math_prompt(self.model, verbose=verbose_on)
-                    q_r = pal.invoke(math_question)
-
-                    prompt = "You are an advanced Math AI Solver. Your task is to provide users with clear and concise explanations and answers to their math questions. When a question is presented to you, utilize the provided reference question and result to generate an insightful concise explanation and the correct answer. If the reference lacks a result or contains an error, independently calculate the answer based on the question given in the reference. Your goal is to ensure the user not only receives the correct answer but also understands the underlying mathematical concepts and processes involved."
                     
-                    messages = [
-                        SystemMessage(
-                            content=prompt
-                        ),
-                        HumanMessage(
-                            content=str(q_r)
-                        ),
-                    ]
+                    q_r = NumPAL.from_math_prompt(self.model, verbose=verbose_on).invoke(math_question)
+                    
+                    response = chain.invoke({"role": role, "input": str(q_r)})
 
-                    response = self.model.invoke(messages)
-
+                # If NumPAL is turned off, use the model to process the math question
                 else:
 
-                    prompt = ChatPromptTemplate.from_messages(
-                        [("system", self.system_prompt), ("user", "{input}")]
-                    )
-                    chain = prompt | self.model | StrOutputParser()
+                    bt.logging.debug(f"💬 Querying OpenAI...")
 
-                    role = synapse.roles[-1]
-                    message = synapse.messages[-1]
-
-                    bt.logging.debug(f"💬 Querying openai: {prompt}")
-
-                    response = chain.invoke({"role": role, "input": message})
+                    response = chain.invoke({"role": role, "input": math_question})
 
                 synapse.completion = response
                 synapse_latency = time.time() - t0
 
-                if self.config.wandb.on and not self.config.numpal.on:
-                    self.log_event(
-                        timing=synapse_latency,
-                        prompt=message,
-                        completion=response,
-                        system_prompt=self.system_prompt,
-                        extra_info=self.get_cost_logging(cb),
-                    )
-                
-                if self.config.wandb.on and self.config.numpal.on:
+                if self.config.wandb.on:
                     self.log_event(
                         timing=synapse_latency,
                         prompt=math_question,
                         completion=response,
-                        system_prompt=prompt,
+                        system_prompt=self.system_prompt,
                         extra_info=self.get_cost_logging(cb),
                     )
 
