@@ -1,13 +1,16 @@
 # This workflow will install Python dependencies, run tests and lint with a variety of Python versions
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
 
-name: Python package
+name: Einstein CI/CD
 
 on:
   push:
-    branches: [ "main", "staging", "pre-staging" ]
+    branches: [ "main", "staging" ]
   pull_request:
     branches: [ "main", "staging", "pre-staging" ]
+
+jobs:on:
+  push:
 
 jobs:
   build:
@@ -28,7 +31,8 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         python -m pip install flake8 pytest black
-        pip install -e .        
+        pip install -e .
+        pip install -r validator_requirements.txt       
 
     - name: Lint with flake8
       run: |
