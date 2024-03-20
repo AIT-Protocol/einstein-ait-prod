@@ -19,7 +19,7 @@ scores4 = [0.38251018447178037]*len(dates4)
 tuples = list( zip(dates1+dates2+dates3+dates4, scores1+scores2+scores3+scores4) )
 
 pal_result = ['0.5', '1/2', '1-0.5', '2*0.25']
-completion = [""]*len(pal_result)
+completion = ['0.5', '1/2', '1-0.5', '2*0.25']
 expected_result = [1.0, 1.0, 1.0, 1.0]
 reference = ['0.5']*len(completion)
 @pytest.mark.parametrize('reference', reference)
@@ -30,7 +30,7 @@ def test_math_score_expression_parsing(reference, pal_result, completion, expect
     assert score == expected_result
 
 pal_result = ['1e3', '-1e3', '1e-3', '-1e-3']
-completion = [""]*len(completion)
+completion = ['1e3', '-1e3', '1e-3', '-1e-3']
 expected_result = [1.0, 0.0, 0.0, 0.0]
 reference = ['1000']*len(completion)
 @pytest.mark.parametrize('reference', reference)
@@ -40,7 +40,7 @@ def test_math_score_expression_parsing_with_exponents(reference, pal_result, com
     assert score == expected_result
 
 pal_result = ['1.0.', '1.0', '1.0.0', '1,', '0 1']
-completion = [""]*len(completion)
+completion = ['1.0.', '1.0', '1.0.0', '1,', '0 1']
 expected_result = [1.0, 1.0, 0.0, 1.0, 1.0]
 reference = ['1.0']*len(completion)
 @pytest.mark.parametrize('reference', reference)
@@ -50,7 +50,7 @@ def test_math_score_expression_parsing_with_punctuation(reference, pal_result, c
     assert score == expected_result
 
 pal_result = ['-20', '-23', '23', '20', '1000', '2*10+3']
-completion = [""]*len(completion)
+completion = ['-20', '-23', '23', '20', '1000', '2*10+3']
 expected_result = [0.0, 0.0, 1.0, 0.8695652173918714, 0.0, 1.0]
 reference = ['23']*len(completion)
 @pytest.mark.parametrize('reference', reference)
@@ -60,7 +60,7 @@ def test_math_score_expression_parsing_with_negative_numbers(reference, pal_resu
     assert score == expected_result
 
 pal_result = ['0', '0.001', '-0.0', '-0.001', '0.0001']
-completion = [""]*len(completion)
+completion = ['0', '0.001', '-0.0', '-0.001', '0.0001']
 expected_result = [1.0, 0.0, 1.0, 0.0, 0.0]
 reference = ['0']*len(completion)
 @pytest.mark.parametrize('reference', reference)
