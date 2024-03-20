@@ -23,6 +23,7 @@ pal_result = [None]*len(completion)
 expected_result = [1.0, 1.0, 1.0, 1.0]
 reference = ['0.5']*len(completion)
 @pytest.mark.parametrize('reference', reference)
+@pytest.mark.parametrize("pal_result", pal_result)
 @pytest.mark.parametrize('completion, expected_result', zip(completion, expected_result))
 def test_math_score_expression_parsing(reference, pal_result, completion, expected_result):
     score = AdvancedMathModel().math_score(reference, pal_result, completion)
