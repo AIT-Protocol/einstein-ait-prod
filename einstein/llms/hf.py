@@ -61,7 +61,7 @@ class HuggingFacePipeline(BasePipeline):
         if self.mock:
             return self.pipeline(composed_prompt, **kwargs)
 
-        outputs = self.pipeline(text_inputs=composed_prompt, **kwargs)
+        outputs = self.pipeline(composed_prompt, **kwargs)
         return outputs[0]["generated_text"]
 
 
