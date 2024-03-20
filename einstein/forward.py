@@ -87,7 +87,6 @@ async def run_step(
         **response_event.__state_dict__(),
     }
 
-    # Esol commented out the following line
     log_event(self, event)
     return event, top_response
 

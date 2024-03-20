@@ -149,6 +149,8 @@ class OpenAIMiner(Miner):
                         ),
                     ]
                     response = self.model.invoke(messages)
+                    output_parser = StrOutputParser()
+                    response = output_parser.invoke(response)
 
                 else:
                     prompt = ChatPromptTemplate.from_messages(

@@ -1,5 +1,5 @@
 # Biττensor: Einstein Subnet Miner Setup
-*How to Mine on the Bittensor Einstein Subnet (SN5)*
+*How to Mine on the Bittensor Einstein Subnet (SN3)*
 
 ## 1. INSTALLATION
 ### Compute Requirements
@@ -245,9 +245,9 @@ btcli s register --subtensor.network test --netuid 78
 ```
 #### Mainnet
 - subtensor.network: finney
-- netuid: 5
+- netuid: 3
 ```
-btcli s register --subtensor.network finney --netuid 5 
+btcli s register --subtensor.network finney --netuid 3 
 ```
 > When running this command, you must enter the wallet name and hotkey name that we instructed in step 2.2
 
@@ -277,15 +277,15 @@ python neurons/miners/openai/miner.py --netuid 78 --subtensor.network test --wal
 ```
 *Mainnet:*
 ```
-python neurons/miners/openai/miner.py --netuid 5 --subtensor.network finney --wallet.name <your miner wallet name> --wallet.hotkey <your miner hotkey name> --neuron.model_id gpt-4 --neuron.max_tokens 1024 --neuron.temperature 0.9 --logging.debug
+python neurons/miners/openai/miner.py --netuid 3 --subtensor.network finney --wallet.name <your miner wallet name> --wallet.hotkey <your miner hotkey name> --neuron.model_id gpt-4 --neuron.max_tokens 1024 --neuron.temperature 0.9 --logging.debug
 ```
 #### On localhost using PM2:
 > Note: When using PM2, you will run both miner and validator. Therefore, if you just follow this guide, you will get an error because you have not set up a validator, but you can rest assured that this error will not affect the miner running.
 
    ```bash
-   pm2 start neurons/miners/openai/miner.py --name s5_openai_miner \
+   pm2 start neurons/miners/openai/miner.py --name s3_openai_miner \
    --interpreter python \
-   -- --netuid <78 / 5> \ #78 is our testnet and 5 is our mainnet
+   -- --netuid <78 / 3> \ #78 is our testnet and 3 is our mainnet
    --subtensor.network <test/finney> \
    --wallet.name <your miner wallet> \
    --wallet.hotkey <your miner hotkey> \
@@ -321,7 +321,7 @@ python neurons/miners/openai/miner.py --netuid 5 --subtensor.network finney --wa
   ```
 
 
-   *NOTE: Your wallet and wallet's hotkey must be created using the bittensor-cli and registered to the netuid 78 (our testnet uid). Additionally, you can run the validator in trace mode by using `--logging.trace` instead of `--logging.debug`*
+   *NOTE: Your wallet and wallet's hotkey must be created using the bittensor-cli and registered to the netuid 78 (our testnet uid) or 3 (our mainnet uid). Additionally, you can run the validator in trace mode by using `--logging.trace` instead of `--logging.debug`*
 
    *- The `--numpal.off` flag is used to disable NumPAL. NumPAL is a feature that allows the miner to solve mathematical problems using the NumPAL supercharger model. Set this flag if you want to disable NumPAL.*
 
@@ -343,7 +343,7 @@ python neurons/miners/openai/miner.py --netuid 5 --subtensor.network finney --wa
 
    ```bash
    pm2 status # This will show you the status of all pm2 processes
-   pm2 logs s5_openai_miner # This will show you the logs of the miner
+   pm2 logs s3_openai_miner # This will show you the logs of the miner
    pm2 stop {process_id} # This will stop the process
    pm2 log # This will show you the logs of all pm2 processes
    pm2 flush # This will clear the logs of all pm2 processes.
