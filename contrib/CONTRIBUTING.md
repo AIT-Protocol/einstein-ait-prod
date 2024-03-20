@@ -19,7 +19,7 @@ The following is a set of guidelines for contributing to the Bittensor ecosystem
 We welcome community contributions. Please make an issue or a PR if you encounter any issues or want to make suggested improvements.
 
 ## Communication Channels
-You can reach out to the SN1 team on the offical bittensor discord channel [here](https://discord.com/channels/799672011265015819/1161764867166961704).
+You can reach out to the AIT team on the offical bittensor discord channel [here](https://discord.gg/pejRNPNR).
 
 > Please follow the Bittensor Subnet [style guide](./STYLE.md) regardless of your contribution type. 
 

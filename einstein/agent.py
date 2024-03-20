@@ -3,18 +3,16 @@ import time
 import bittensor as bt
 from dataclasses import asdict
 from einstein.tasks import Task
-from einstein.llm import HuggingFaceLLM
+from einstein.llms import HuggingFaceLLM, vLLM_LLM
 from einstein.cleaners.cleaner import CleanerPipeline
+
 from einstein.persona import Persona, create_persona
+
 from transformers import Pipeline
 
-import warnings
 
-warnings.filterwarnings("ignore")
-
-
-class HumanAgent(HuggingFaceLLM):
-    "Agent that impersonates a human user, specifically seeking assistance from Einstein in solving complex mathematical problems."
+class HumanAgent(vLLM_LLM):
+    "Agent that impersonates a human user and makes queries based on its goal."
 
     @property
     def progress(self):
@@ -45,8 +43,6 @@ class HumanAgent(HuggingFaceLLM):
         self.persona = persona
         self.task = task
         self.llm_pipeline = llm_pipeline
-        
-        bt.logging.info(f"🤖 Persona generated: {persona.profile}, {persona.mood}, {persona.tone}")
 
         if system_template is not None:
             self.system_prompt_template = system_template
@@ -64,20 +60,20 @@ class HumanAgent(HuggingFaceLLM):
         )
 
         if begin_conversation:
+            bt.logging.info("🤖 Generating challenge query...")
             # initiates the conversation with the miner
             self.challenge = self.create_challenge()
 
     def create_challenge(self) -> str:
-        """Creates the opening question to focus on a mathematical challenge suitable for Einstein's expertise."""
+        """Creates the opening question of the conversation which is based on the task query but dressed in the persona of the user."""
         t0 = time.time()
 
         cleaner = None
         if hasattr(self.task, "cleaning_pipeline"):
             cleaner = CleanerPipeline(cleaning_pipeline=self.task.cleaning_pipeline)
 
-        # Example message: "Derive the formula for..."
         self.challenge = super().query(
-            message="Pose a mathematical problem", cleaner=cleaner
+            message="Ask a question related to your goal", cleaner=cleaner
         )
         self.challenge = self.task.format_challenge(self.challenge)
         self.challenge_time = time.time() - t0
@@ -108,17 +104,15 @@ class HumanAgent(HuggingFaceLLM):
     def update_progress(
         self, top_reward: float, top_response: str, continue_conversation=False
     ):
-        bt.logging.info(f"\033[1;34m📈 Updating progress with reward {top_reward:.2f}...\033[0m")
-        bt.logging.info(f"\033[1;34m📝 Top response: \033[0m{top_response}")
         if top_reward > self.task.reward_threshold:
             self.task.complete = True
             self.messages.append({"content": top_response, "role": "user"})
 
-            bt.logging.info("✅ \033[1;32;40mAgent finished its goal\033[0m")
+            bt.logging.info("Agent finished its goal")
             return
 
         if continue_conversation:
             bt.logging.info(
-                "❌ \033[1;31;40m Agent did not finish its goal, continuing conversation...\033[0m"
+                "↪ Agent did not finish its goal, continuing conversation..."
             )
             self.continue_conversation(miner_response=top_response)
