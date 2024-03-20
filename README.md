@@ -87,6 +87,9 @@ Tasks contain a **query** (basic question/problem) and a **reference** (ideal an
 
    Alternatively, if you are running on a clean Ubuntu machine, you can run `scripts/install_ubuntu.sh` to effortlessly install everything you need. If you are wanting to run an OpenAI miner, you will need to place your OpenAI API key in the `OPENAI_API_KEY` variable in the script. 
 
+> Important: vLLM currently faces a [notable limitation](https://github.com/vllm-project/vllm/issues/3012) in designating a specific GPU for model execution via code. Consequently, to employ a particular CUDA device for your model's operations, it's necessary to manually adjust your environment variable `CUDA_VISIBLE_DEVICES`. For instance, setting `export CUDA_VISIBLE_DEVICES=1,2` will explicitly define the CUDA devices available for use.
+
+
 2. Install [PM2](https://pm2.io/docs/runtime/guide/installation/) and the [`jq` package](https://jqlang.github.io/jq/) on your system.
 
    **- On Linux**:
@@ -122,13 +125,7 @@ Prior to running a miner or validator, you must [create a wallet](https://github
 
 ## 🧾 Running Validators
 
-1. Install this repository, you can do so by following the steps outlined in [the installation section](#installation) and then install the required dependencies by running the following command:
-
-   ```bash
-   pip install -r validator_requirements.txt
-   ```
-
-> Important: vLLM currently faces a [notable limitation](https://github.com/vllm-project/vllm/issues/3012) in designating a specific GPU for model execution via code. Consequently, to employ a particular CUDA device for your model's operations, it's necessary to manually adjust your environment variable `CUDA_VISIBLE_DEVICES`. For instance, setting `export CUDA_VISIBLE_DEVICES=1,2` will explicitly define the CUDA devices available for use.
+1. Install this repository, you can do so by following the steps outlined in [the installation section](#installation) 
 
 2. Install [Weights and Biases](https://docs.wandb.ai/quickstart) and run `wandb login` within this repository. This will initialize Weights and Biases, enabling you to view KPIs and Metrics on your validator. (Strongly recommended to help the network improve from data sharing)
 3. Run the `run.sh` script which will handle running your validator and pulling the latest updates as they are issued.

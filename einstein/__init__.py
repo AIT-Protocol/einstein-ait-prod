@@ -1,4 +1,3 @@
-# Define the version of the template module.
 __version__ = "1.2.0"
 version_split = __version__.split(".")
 __spec_version__ = (
@@ -19,4 +18,4 @@ from . import forward
 from . import agent
 from . import conversation
 from . import dendrite
-from . import llm
+from .llms import hf
