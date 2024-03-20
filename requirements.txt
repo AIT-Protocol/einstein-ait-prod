@@ -15,5 +15,6 @@ sentencepiece
 wandb==0.15.10
 tenacity
 antlr4-python3-runtime==4.11
+vllm
 git+https://github.com/AIT-Protocol/mathdataset.git@main#egg=mathgenerator
 git+https://github.com/AIT-Protocol/NumPAL.git@main#egg=NumPAL
