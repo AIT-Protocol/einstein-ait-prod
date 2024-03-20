@@ -1,7 +1,7 @@
-greenlet==3.0.3
 angle_emb
-bittensor
-bs4==0.0.2
+greenlet
+bittensor==6.6.0
+bs4
 click==8.1.3
 datasets==2.14.6
 torch==2.1.1
@@ -10,7 +10,6 @@ transformers==4.36.2
 pre-commit==3.3.2
 numpy==1.22.0
 scipy==1.10.1
-sympy==1.12
 sentencepiece
 wandb==0.15.10
 tenacity
