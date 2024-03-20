@@ -91,34 +91,6 @@ class HuggingFaceLLM:
 
         return response
 
-
-    def queryTemp(
-        self,
-        message: str,
-        disregard_system_prompt: bool = False,
-        cleaner: CleanerPipeline = None,
-    ):
-        messages = self.messages + [{"content": message, "role": "user"}]
-
-        if disregard_system_prompt:
-            messages = messages[1:]
-
-        tbeg = time.time()
-        response = self.forward(messages=messages)
-
-        if cleaner is not None:
-            clean_response = cleaner.apply(generation=response)
-            if clean_response != response:
-                bt.logging.debug(
-                    f"Response cleaned, chars removed: {len(response) - len(clean_response)}..."
-                )
-            response = clean_response
-
-        self.messages = messages + [{"content": response, "role": "assistant"}]
-        self.times = self.times + [0, time.time() - tbeg]
-
-        return response
-
     def __call__(self, messages: List[Dict[str, str]]):
         return self.forward(messages=messages)
 
@@ -135,6 +107,6 @@ class HuggingFaceLLM:
         response = response.replace(prompt, "").strip()
 
         bt.logging.info(
-            f"🤖 \033[1;34m{self.__class__.__name__} generated the following output:\033[0m\n{response}"
+            f"{self.__class__.__name__} generated the following output:\n{response}"
         )
         return response
