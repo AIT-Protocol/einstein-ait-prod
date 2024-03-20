@@ -18,8 +18,8 @@ dates4 = [date4.strftime(format) for format in date_formats]
 scores4 = [0.38251018447178037]*len(dates4)
 tuples = list( zip(dates1+dates2+dates3+dates4, scores1+scores2+scores3+scores4) )
 
-completion = ['0.5', '1/2', '1-0.5', '2*0.25']
-pal_result = [None]*len(completion)
+pal_result = ['0.5', '1/2', '1-0.5', '2*0.25']
+completion = [None]*len(pal_result)
 expected_result = [1.0, 1.0, 1.0, 1.0]
 reference = ['0.5']*len(completion)
 @pytest.mark.parametrize('reference', reference)
