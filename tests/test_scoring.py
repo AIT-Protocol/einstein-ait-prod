@@ -19,47 +19,52 @@ scores4 = [0.38251018447178037]*len(dates4)
 tuples = list( zip(dates1+dates2+dates3+dates4, scores1+scores2+scores3+scores4) )
 
 completion = ['0.5', '1/2', '1-0.5', '2*0.25']
+pal_result = None
 expected_result = [1.0, 1.0, 1.0, 1.0]
 reference = ['0.5']*len(completion)
 @pytest.mark.parametrize('reference', reference)
 @pytest.mark.parametrize('completion, expected_result', zip(completion, expected_result))
-def test_math_score_expression_parsing(reference, completion, expected_result):
-    score = AdvancedMathModel().math_score(reference, completion)
+def test_math_score_expression_parsing(reference, pal_result, completion, expected_result):
+    score = AdvancedMathModel().math_score(reference, pal_result, completion)
     assert score == expected_result
 
 completion = ['1e3', '-1e3', '1e-3', '-1e-3']
+pal_result = None
 expected_result = [1.0, 0.0, 0.0, 0.0]
 reference = ['1000']*len(completion)
 @pytest.mark.parametrize('reference', reference)
 @pytest.mark.parametrize('completion, expected_result', zip(completion, expected_result))
-def test_math_score_expression_parsing_with_exponents(reference, completion, expected_result):
-    score = AdvancedMathModel().math_score(reference, completion)
+def test_math_score_expression_parsing_with_exponents(reference, pal_result, completion, expected_result):
+    score = AdvancedMathModel().math_score(reference,pal_result, completion)
     assert score == expected_result
 
 completion = ['1.0.', '1.0', '1.0.0', '1,', '0 1']
+pal_result = None
 expected_result = [1.0, 1.0, 0.0, 1.0, 1.0]
 reference = ['1.0']*len(completion)
 @pytest.mark.parametrize('reference', reference)
 @pytest.mark.parametrize('completion, expected_result', zip(completion, expected_result))
-def test_math_score_expression_parsing_with_punctuation(reference, completion, expected_result):
-    score = AdvancedMathModel().math_score(reference, completion)
+def test_math_score_expression_parsing_with_punctuation(reference, pal_result, completion, expected_result):
+    score = AdvancedMathModel().math_score(reference,pal_result, completion)
     assert score == expected_result
 
 completion = ['-20', '-23', '23', '20', '1000', '2*10+3']
+pal_result = None
 expected_result = [0.0, 0.0, 1.0, 0.8695652173918714, 0.0, 1.0]
 reference = ['23']*len(completion)
 @pytest.mark.parametrize('reference', reference)
 @pytest.mark.parametrize('completion, expected_result', zip(completion, expected_result))
-def test_math_score_expression_parsing_with_negative_numbers(reference, completion, expected_result):
-    score = AdvancedMathModel().math_score(reference, completion)
+def test_math_score_expression_parsing_with_negative_numbers(reference, pal_result, completion, expected_result):
+    score = AdvancedMathModel().math_score(reference,pal_result, completion)
     assert score == expected_result
 
 completion = ['0', '0.001', '-0.0', '-0.001', '0.0001']
+pal_result = None
 expected_result = [1.0, 0.0, 1.0, 0.0, 0.0]
 reference = ['0']*len(completion)
 @pytest.mark.parametrize('reference', reference)
 @pytest.mark.parametrize('completion, expected_result', zip(completion, expected_result))
-def test_math_score_expression_parsing_with_zeros(reference, completion, expected_result):
-    score = AdvancedMathModel().math_score(reference, completion)
+def test_math_score_expression_parsing_with_zeros(reference, pal_result, completion, expected_result):
+    score = AdvancedMathModel().math_score(reference, pal_result, completion)
     assert score == expected_result
     
