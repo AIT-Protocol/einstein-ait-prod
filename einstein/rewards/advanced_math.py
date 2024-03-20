@@ -76,7 +76,7 @@ class AdvancedMathModel(BaseRewardModel):
         if extracted_answer:
             comparison_values = sorted(AdvancedMathModel.extract_numeric_values(extracted_answer))
         else:
-            comparison_values = []
+            comparison_values = sorted(AdvancedMathModel.extract_numeric_values(completion))
 
         reference_values = sorted(AdvancedMathModel.extract_numeric_values(reference))
 
