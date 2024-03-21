@@ -201,7 +201,7 @@ def add_miner_args(cls, parser):
     parser.add_argument(
         "--neuron.max_tokens",
         type=int,
-        default=256,
+        default=1024,
         help="The maximum number of tokens to generate in the completion.",
     )
 
@@ -268,7 +268,7 @@ def add_validator_args(cls, parser):
         "--neuron.model_id",
         type=str,
         help="The model to use for the validator.",
-        default="HuggingFaceH4/zephyr-7b-beta",
+        default="ait-protocol/Cerebral-7b-beta",
     )
 
     parser.add_argument(
