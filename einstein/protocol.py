@@ -108,6 +108,11 @@ class CoreSynapse(bt.Synapse):
         allow_mutation=False,
     )
 
+    pal_result: str = pydantic.Field(
+        "",
+        title="pal_result",
+        description="The direct result from NumPAL, which may be a number, symbol, or tuple",
+    )
 
 class StreamCoreSynapse(bt.StreamingSynapse):
     """

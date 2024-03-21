@@ -15,6 +15,7 @@ class AdvancedMathModel(BaseRewardModel):
         super().__init__()
 
     @staticmethod
+
     def extract_numeric_values(data):
         """
         Extracts numeric values from a given text.
@@ -94,14 +95,14 @@ class AdvancedMathModel(BaseRewardModel):
         return final_score
 
 
-    def reward(self, reference: str, completions: List[str]) -> BatchRewardOutput:
+    def reward(self, reference: str, pal_results: List[str], completions: List[str]) -> BatchRewardOutput:
         """Compute difference scores given a completion and reference pair."""
         rewards = []
         timings = []
 
-        for completion in completions:
+        for completion, pal_result in zip(completions, pal_results):
             t0 = time.time()
-            reward = self.math_score(reference, completion)
+            reward = self.math_score(reference, pal_result, completion)
             timings.append(time.time() - t0)
             rewards.append(reward)
 

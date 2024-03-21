@@ -137,8 +137,17 @@ class OpenAIMiner(Miner):
 
                     bt.logging.debug("\033[1;32m💬 Running Math script on NumPAL\033[0m")
                     verbose_on = not self.config.numpal.verbose.off
-                    
                     q_r = NumPAL.from_math_prompt(self.model, verbose=verbose_on).invoke(math_question)
+
+                    # Save the result from NumPAL to self.pal_result
+                    synapse.pal_result = q_r['result']
+
+                    prompt = """
+                    You are an advanced Math AI Solver. Your task is to provide users with clear and concise explanations and answers to their math questions. When a question is presented to you, utilize the provided reference question and result to generate an insightful concise explanation and the correct answer. If the reference lacks a result or contains an error, independently calculate the answer based on the question given in the reference. Your goal is to ensure the user not only receives the correct answer but also understands the underlying mathematical concepts and processes involved.
+                    When ever you finish your response, you always end the entire sentence with 'So the final answer is: {the answer}'
+                    If the answer is a symbol, you must say 'So the final answer is: {that symbol}'.
+                    """
+                    
                     
                     response = chain.invoke({"role": role, "input": str(q_r)})
 
@@ -146,7 +155,7 @@ class OpenAIMiner(Miner):
                 else:
 
                     bt.logging.debug(f"💬 Querying OpenAI...")
-
+                    synapse.pal_result=None
                     response = chain.invoke({"role": role, "input": math_question})
 
                 synapse.completion = response

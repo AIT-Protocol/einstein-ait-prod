@@ -8,6 +8,7 @@ class DendriteResponseEvent:
 
         self.uids = uids
         self.completions = [synapse.completion for synapse in responses]
+        self.pal_results = [synapse.pal_result for synapse in responses]
         self.timings = [
             synapse.dendrite.process_time or 0 for synapse in responses
         ]
@@ -22,11 +23,12 @@ class DendriteResponseEvent:
         return {
             "uids": self.uids.tolist(),
             "completions": self.completions,
+            "pal_results": self.pal_results,
             "timings": self.timings,
             "status_messages": self.status_messages,
             "status_codes": self.status_codes,
         }
 
     def __repr__(self):
-        return f"DendriteResponseEvent(uids={self.uids}, completions={self.completions}, timings={self.timings}, status_messages={self.status_messages}, status_codes={self.status_codes})"
+        return f"DendriteResponseEvent(uids={self.uids}, completions={self.completions}, pal_results={self.pal_results}, timings={self.timings}, status_messages={self.status_messages}, status_codes={self.status_codes})"
 
