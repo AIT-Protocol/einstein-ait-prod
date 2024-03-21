@@ -30,4 +30,7 @@ python3 -m pip install -r requirements.txt
 # Install einstein-ait-prod package
 python3 -m pip install -e .
 
+# echo 
+echo -e "\e[1;32mThe Error on pip's dependency resolver is bound to happen, do not worry, this is normal behavior\e[0m"
+
 echo "Script completed successfully."
