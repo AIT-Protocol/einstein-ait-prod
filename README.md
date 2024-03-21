@@ -78,11 +78,11 @@ Tasks contain a **query** (basic question/problem) and a **reference** (ideal an
 
 # 📲 Installation
 
-1. This repository requires python3.9 or higher. To install it, simply clone this repository and run the [install.sh](./install.sh) script.
+1. This repository requires python3.9 or higher. To install it, simply clone this repository and run the [install.sh](./scripts/install.sh) script.
    ```bash
    git clone https://github.com/ait-protocol/einstein-ait-prod.git
    cd einstein-ait-prod
-   bash install.sh
+   bash scripts/install.sh
    ```
 
    Alternatively, if you are running on a clean Ubuntu machine, you can run `scripts/install_ubuntu.sh` to effortlessly install everything you need. If you are wanting to run an OpenAI miner, you will need to place your OpenAI API key in the `OPENAI_API_KEY` variable in the script. 
