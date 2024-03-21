@@ -85,6 +85,11 @@ Tasks contain a **query** (basic question/problem) and a **reference** (ideal an
    bash scripts/install.sh
    ```
 
+   to update the repository, you can run the [update.sh](./scripts/update.sh) script.
+   ```bash
+   bash scripts/update.sh
+   ```
+
    Alternatively, if you are running on a clean Ubuntu machine, you can run `scripts/install_ubuntu.sh` to effortlessly install everything you need. If you are wanting to run an OpenAI miner, you will need to place your OpenAI API key in the `OPENAI_API_KEY` variable in the script. 
 
 > Important: vLLM currently faces a [notable limitation](https://github.com/vllm-project/vllm/issues/3012) in designating a specific GPU for model execution via code. Consequently, to employ a particular CUDA device for your model's operations, it's necessary to manually adjust your environment variable `CUDA_VISIBLE_DEVICES`. For instance, setting `export CUDA_VISIBLE_DEVICES=1,2` will explicitly define the CUDA devices available for use.
