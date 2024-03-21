@@ -32,9 +32,6 @@ class ZephyrMiner(Miner):
     --neuron.model_id HuggingFaceH4/zephyr-7b-beta \
     --neuron.max_tokens 1024 \
     --neuron.do_sample True \
-    --neuron.temperature 0.9 \
-    --neuron.top_k 50 \
-    --neuron.top_p 0.95 \
     --wandb.on True \
     --wandb.entity sn3 \
     --wandb.project_name miners_experiments
@@ -109,9 +106,6 @@ class ZephyrMiner(Miner):
                 system_prompt=self.system_prompt,
                 max_new_tokens=self.config.neuron.max_tokens,
                 do_sample=self.config.neuron.do_sample,
-                temperature=self.config.neuron.temperature,
-                top_k=self.config.neuron.top_k,
-                top_p=self.config.neuron.top_p,
             ).query(
                 message=prompt,  # For now we just take the last message
                 role="user",
