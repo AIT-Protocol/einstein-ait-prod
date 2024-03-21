@@ -268,7 +268,7 @@ def add_validator_args(cls, parser):
         "--neuron.model_id",
         type=str,
         help="The model to use for the validator.",
-        default="ait-protocol/Cerebral-7b-beta",
+        default="HuggingFaceH4/zephyr-7b-beta",
     )
 
     parser.add_argument(
