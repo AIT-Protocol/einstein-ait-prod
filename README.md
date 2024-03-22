@@ -8,7 +8,7 @@
 
 ### 🚀 The Incentivized Internet <!-- omit in toc -->
 
-[Testnet 78 Discord](https://discord.com/invite/GvEMzStVN6) • [AIT Discord](https://discord.gg/aitprotocols) • [AIT Telegram](AIT_Protocol)
+[Testnet 78 Discord](https://discord.com/invite/GvEMzStVN6) • [AIT Discord](https://discord.gg/aitprotocols) • [AIT Telegram](AIT_Protocol) • [Subnet Roadmap & Info](https://einstein-ait.notion.site/SN3-Einstein-AIT-Subnet-1f6a76b53b094fd994526443a9937228)
 
 </div>
 
@@ -18,7 +18,24 @@ This repository is the **official codebase for the Einstein - AIT subnet**. It c
 
 # 📚 Introduction
 
-Our primary narrative as a mathematics, logic, and data analysis AI subnet is to optimize response accuracy. We achieve this by enabling the language model to autonomously write, test, and execute code within unique Python environments. This approach ensures that our responses are not only precise but also practical, effectively addressing everyday challenges faced by users. Furthermore, our deployment offers significant advantages to the Bittensor ecosystem. By providing a model capable of independent code writing and execution, we bolster the capabilities of other subnets, thereby enhancing their accuracy and improving the quality of responses network-wide. Therefore, our contributions extend beyond direct user support to elevating the overall functionality of the Bittensor ecosystem.
+**About Einstein-AIT Subnet:**
+
+Einstein-AIT subnet has a primary focus on developing an AI/ML model that specializes in mathematics, computational thinking and data analysis.  Einstein-AIT subnet has two near term objectives:
+
+1. The launch of **NumPAL** LLM chain supercharger, and
+2. The launch of a Hugging Face leaderboard, fine tuning competition for specialized AI/ML models with a focus on complex mathematics. This includes the open sourcing of AIT’s custom AI/ML which can be cloned, iterated and improved upon with custom data sets by mining competitors. 
+
+**Currently**, we have released an LLM chain (supercharger), we call **NumPAL** which can be hooked into any LLM (custom model or API) to accomplish the following: 
+
+1. Improve response accuracy,
+2. Minimize the cost of iteration, and
+3. Minimize processing time over iterations
+
+We’ve charted the results of a benchmarking session where we took ChatGPT 3.5 supercharged by NumPAL, against ChatGPT 4 Turbo, [See results here](https://www.notion.so/SN3-Einstein-AIT-Subnet-1f6a76b53b094fd994526443a9937228?pvs=21).
+
+**How NumPAL works:** NumPAL is a LLM chain that forces the LLM to ‘think’ before it (’speaks’) spits out a generalized response. NumPAL forces the LLM to write python code, for example by calculating the result of a math problem, and running that code through it’s built-in python executor, finally sending that result back to the LLM to generate a response with a logical explanation to the prompter. 
+
+**NumPAL can be used to supercharge any LLM / miner on the Bittensor network 👀**
 
 ## 🎯 Mission
 
