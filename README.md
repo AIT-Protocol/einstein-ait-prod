@@ -209,8 +209,9 @@ To run your own GPU model you can customize the script in [neurons/miners/zephyr
    --subtensor.network test or finney \ # test for testnet and finney for mainnet
    --wallet.name <your miner wallet> \
    --wallet.hotkey <your miner hotkey> \
-   --logging.debug \
    # WHAT BELOW IS OPTIONAL, PLEASE READ THE DESCRIPTIONS BELOW
+   --logging.debug \
+   --logging.trace \
    --neuron.model_id gpt-3.5-turbo-0125 \
    --neuron.max_tokens 1024 \
    --neuron.temperature 0.9 \
