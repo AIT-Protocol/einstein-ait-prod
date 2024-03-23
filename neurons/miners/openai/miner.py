@@ -164,7 +164,7 @@ class OpenAIMiner(Miner):
                     # extra_info=self.get_cost_logging(cb),
                 )
 
-            bt.logging.debug(f"✅ \033[1;32mResponse Served \033[0m")
+            bt.logging.debug(f"✅ \033[1;32mResponse Served: \033[0m {synapse}")
             self.step += 1
 
             return synapse
