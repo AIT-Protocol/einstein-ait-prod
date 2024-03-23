@@ -13,7 +13,6 @@ from einstein.base.neuron import BaseNeuron
 from einstein.mock import MockDendrite
 from einstein.utils.config import add_validator_args
 from einstein.utils.exceptions import MaxRetryError
-from einstein import __version_as_int__
 
 class BaseValidatorNeuron(BaseNeuron):
     """
@@ -254,7 +253,7 @@ class BaseValidatorNeuron(BaseNeuron):
             weights=uint_weights,
             wait_for_finalization=False,
             wait_for_inclusion=False,
-            version_key=__version_as_int__,
+            version_key=self.spec_version,
         )
         if result is True:
             bt.logging.info("set_weights on chain successfully!")
