@@ -14,13 +14,10 @@ from einstein.mock import MockDendrite
 from einstein.utils.config import add_validator_args
 from einstein.utils.exceptions import MaxRetryError
 
-
 class BaseValidatorNeuron(BaseNeuron):
     """
     Base class for Bittensor validators. Your validator should inherit from this class.
     """
-
-    neuron_type: str = "ValidatorNeuron"
 
     @classmethod
     def add_args(cls, parser: argparse.ArgumentParser):

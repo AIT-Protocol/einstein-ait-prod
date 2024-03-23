@@ -1,14 +1,15 @@
  
 <div align="center">
-  <h1>🧠 Einstein - AIT 🤖</h1>
+  <h1>🧠 SN3: Einstein - AIT 🤖</h1>
 
-## **Testnet uid: 78 🌐**
+## **Testnet uid: 78 \ Mainnet uid: 3🌐**
 
 ---
 
 ### 🚀 The Incentivized Internet <!-- omit in toc -->
 
-[Testnet 78 Discord](https://discord.com/invite/GvEMzStVN6) • [AIT Discord](https://discord.gg/aitprotocols) • [AIT Telegram](AIT_Protocol) • [Subnet Roadmap & Info](https://einstein-ait.notion.site/SN3-Einstein-AIT-Subnet-1f6a76b53b094fd994526443a9937228)
+
+[Discord](https://discord.com/invite/GvEMzStVN6) • [AIT Discord](https://discord.gg/aitprotocols) • [AIT Telegram](AIT_Protocol) • [Subnet Roadmap & Info](https://einstein-ait.notion.site/SN3-Einstein-AIT-Subnet-1f6a76b53b094fd994526443a9937228)
 
 </div>
 
@@ -95,17 +96,24 @@ Tasks contain a **query** (basic question/problem) and a **reference** (ideal an
 
 # 📲 Installation
 
-This repository requires python3.9 or higher. To install, simply clone this repository and install the requirements.
+1. This repository requires python3.9 or higher. To install it, simply clone this repository and run the [install.sh](./scripts/install.sh) script.
+   ```bash
+   git clone https://github.com/ait-protocol/einstein-ait-prod.git
+   cd einstein-ait-prod
+   bash scripts/install.sh
+   ```
 
-```bash
-git clone https://github.com/ait-protocol/einstein-ait-prod.git && cd einstein-ait-prod
-```
+   to update the repository, you can run the [update.sh](./scripts/update.sh) script.
+   ```bash
+   bash scripts/update.sh
+   ```
 
-```bash
-python -m pip install -r requirements.txt && python -m pip install -e .
-```
+   Alternatively, if you are running on a clean Ubuntu machine, you can run `scripts/install_ubuntu.sh` to effortlessly install everything you need. If you are wanting to run an OpenAI miner, you will need to place your OpenAI API key in the `OPENAI_API_KEY` variable in the script. 
 
-Install [PM2](https://pm2.io/docs/runtime/guide/installation/) and the [`jq` package](https://jqlang.github.io/jq/) on your system.
+> Important: vLLM currently faces a [notable limitation](https://github.com/vllm-project/vllm/issues/3012) in designating a specific GPU for model execution via code. Consequently, to employ a particular CUDA device for your model's operations, it's necessary to manually adjust your environment variable `CUDA_VISIBLE_DEVICES`. For instance, setting `export CUDA_VISIBLE_DEVICES=1,2` will explicitly define the CUDA devices available for use.
+
+
+2. Install [PM2](https://pm2.io/docs/runtime/guide/installation/) and the [`jq` package](https://jqlang.github.io/jq/) on your system.
 
    **- On Linux**:
   
@@ -140,7 +148,8 @@ Prior to running a miner or validator, you must [create a wallet](https://github
 
 ## 🧾 Running Validators
 
-1. Install this repository, you can do so by following the steps outlined in [the installation section](#installation).
+1. Install this repository, you can do so by following the steps outlined in [the installation section](#installation) 
+
 2. Install [Weights and Biases](https://docs.wandb.ai/quickstart) and run `wandb login` within this repository. This will initialize Weights and Biases, enabling you to view KPIs and Metrics on your validator. (Strongly recommended to help the network improve from data sharing)
 3. Run the `run.sh` script which will handle running your validator and pulling the latest updates as they are issued.
 
@@ -162,15 +171,15 @@ Prior to running a miner or validator, you must [create a wallet](https://github
 
    ```bash
    python neurons/validator.py \
-   --netuid 78 or 3 \
-   --subtensor.network test or finney \
+   --netuid 78 or 3 \ # 78 for testnet and 3 for mainnet
+   --subtensor.network test or finney \ # test for testnet and finney for mainnet
    --neuron.device cuda \
    --wallet.name <your validator wallet> \
    --wallet.hotkey <your validator hotkey> \
    --logging.debug
    ```
 
-   *NOTE: Your wallet and wallet's hotkey must be created using the bittensor-cli and registered to the netuid 78 (our testnet uid). Additionally, you can run the validator in trace mode by using `--logging.trace` instead of `--logging.debug`*
+   *NOTE: Your wallet and wallet's hotkey must be created using the bittensor-cli and registered to the netuid 78 (our testnet uid) or 3 (our mainnet uid). Additionally, you can run the validator in trace mode by using `--logging.trace` instead of `--logging.debug`*x
 
 ---
 
@@ -214,8 +223,8 @@ To run your own GPU model you can customize the script in [neurons/miners/zephyr
    ```bash
    pm2 start neurons/miners/openai/miner.py --name s3_openai_miner \
    --interpreter python \
-   -- --netuid 78 or 3 \
-   --subtensor.network test or finney \
+   -- --netuid 78 or 3 \ # 78 for testnet and 3 for mainnet
+   --subtensor.network test or finney \ # test for testnet and finney for mainnet
    --wallet.name <your miner wallet> \
    --wallet.hotkey <your miner hotkey> \
    --logging.debug \
@@ -230,7 +239,7 @@ To run your own GPU model you can customize the script in [neurons/miners/zephyr
    --numpal.off \ # Set this if you want to disable NumPAL (Not recommended)
    ```
 
-   *NOTE: Your wallet and wallet's hotkey must be created using the bittensor-cli and registered to the netuid 78 (our testnet uid). Additionally, you can run the validator in trace mode by using `--logging.trace` instead of `--logging.debug`*
+   *NOTE: Your wallet and wallet's hotkey must be created using the bittensor-cli and registered to the netuid 78 (our testnet uid) or 3 (our mainnet uid). Additionally, you can run the validator in trace mode by using `--logging.trace` instead of `--logging.debug`*
 
    *- The `--numpal.off` flag is used to disable NumPAL. NumPAL is a feature that allows the miner to solve mathematical problems using the NumPAL supercharger model. Set this flag if you want to disable NumPAL.*
 
