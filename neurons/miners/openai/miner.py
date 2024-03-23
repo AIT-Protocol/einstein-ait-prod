@@ -116,52 +116,55 @@ class OpenAIMiner(Miner):
         the miner's intended operation. This method demonstrates a basic transformation of input data.
         """
         try:
-            with get_openai_callback() as cb:
-                t0 = time.time()
-                bt.logging.debug(f"📧 Message received, forwarding synapse: {synapse}")
+            # with get_openai_callback() as cb:
+            t0 = time.time()
+            bt.logging.debug(f"📧 Message received, forwarding synapse: {synapse}")
+            
+            # Create a chain of operations to process the input
+            prompt = ChatPromptTemplate.from_messages(
+                [("system", self.system_prompt), ("user", "{input}")]
+                )
+            
+            chain = prompt | self.model | StrOutputParser()
+            
+            role = synapse.roles[-1]
+            
+            # Get the math question from the last message
+            math_question = synapse.messages[-1]
+            
+            # If NumPAL is turned on, use it to process the math question
+            if not self.config.numpal.off:
+
+                bt.logging.debug("\033[1;32m💬 Running Math script on NumPAL\033[0m")
+                verbose_on = not self.config.numpal.verbose.off
                 
-                # Create a chain of operations to process the input
-                prompt = ChatPromptTemplate.from_messages(
-                    [("system", self.system_prompt), ("user", "{input}")]
-                    )
+                q_r = NumPAL.from_math_prompt(self.model, verbose=verbose_on).invoke(math_question)
                 
-                chain = prompt | self.model | StrOutputParser()
-                
-                role = synapse.roles[-1]
-                
-                # Get the math question from the last message
-                math_question = synapse.messages[-1]
-                
-                # If NumPAL is turned on, use it to process the math question
-                if not self.config.numpal.off:
+                response = chain.invoke({"role": role, "input": str(q_r)})
 
-                    bt.logging.debug("\033[1;32m💬 Running Math script on NumPAL\033[0m")
-                    verbose_on = not self.config.numpal.verbose.off
-                    
-                    q_r = NumPAL.from_math_prompt(self.model, verbose=verbose_on).invoke(math_question)
-                    
-                    response = chain.invoke({"role": role, "input": str(q_r)})
+            # If NumPAL is turned off, use the model to process the math question
+            else:
 
-                # If NumPAL is turned off, use the model to process the math question
-                else:
+                bt.logging.debug(f"💬 Querying OpenAI...")
 
-                    bt.logging.debug(f"💬 Querying OpenAI...")
+                response = chain.invoke({"role": role, "input": math_question})
 
-                    response = chain.invoke({"role": role, "input": math_question})
+            synapse.completion = response
+            synapse_latency = time.time() - t0
+            
+            bt.logging.info(f'📧 \033[1;34mMessage received: {math_question}\033[0m')
+            bt.logging.info(f'📧 \033[1;34mResponse: {response}\033[0m')
 
-                synapse.completion = response
-                synapse_latency = time.time() - t0
+            if self.config.wandb.on:
+                self.log_event(
+                    timing=synapse_latency,
+                    prompt=math_question,
+                    completion=response,
+                    system_prompt=self.system_prompt,
+                    # extra_info=self.get_cost_logging(cb),
+                )
 
-                if self.config.wandb.on:
-                    self.log_event(
-                        timing=synapse_latency,
-                        prompt=math_question,
-                        completion=response,
-                        system_prompt=self.system_prompt,
-                        extra_info=self.get_cost_logging(cb),
-                    )
-
-            bt.logging.debug(f"\033[1;32m✅ Served Response: \033[0m {response}")
+            bt.logging.debug(f"✅ \033[1;32mResponse Served \033[0m")
             self.step += 1
 
             return synapse
