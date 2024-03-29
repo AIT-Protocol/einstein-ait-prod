@@ -62,7 +62,7 @@ def add_args(cls, parser):
     Adds relevant arguments to the parser for operation.
     """
     # Netuid Arg: The netuid of the subnet to connect to.
-    parser.add_argument("--netuid", type=int, help="Subnet netuid", default=3)
+    parser.add_argument("--netuid", type=int, help="Subnet netuid", default=78)
 
     parser.add_argument(
         "--neuron.device",

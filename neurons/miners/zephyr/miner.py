@@ -33,8 +33,8 @@ class ZephyrMiner(Miner):
     --neuron.max_tokens 1024 \
     --neuron.do_sample True \
     --wandb.on True \
-    --wandb.entity sn3 \
-    --wandb.project_name miners_experiments
+    --wandb.entity {your entity} \
+    --wandb.project_name {your project name}
     """
 
     @classmethod
