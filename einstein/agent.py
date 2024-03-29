@@ -62,8 +62,7 @@ class HumanAgent(vLLM_LLM):
         if begin_conversation:
             bt.logging.info("🤖 Generating challenge query...")
             # initiates the conversation with the miner
-            # self.challenge = self.create_challenge()
-            self.challenge_time = 0
+            self.challenge = self.create_challenge()
 
     def create_challenge(self) -> str:
         """Creates the opening question of the conversation which is based on the task query but dressed in the persona of the user."""
