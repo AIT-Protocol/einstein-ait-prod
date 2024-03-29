@@ -22,6 +22,7 @@ class SynapseWithEvent:
     output_synapse: CoreSynapse 
 
 
+
 class Validator(BaseValidatorNeuron):
 
     def __init__(self, config=None):
@@ -112,6 +113,7 @@ class Validator(BaseValidatorNeuron):
             self.is_running = False
             bt.logging.debug("Stopped")
             self.api_server.stop()
+
 
 
 
