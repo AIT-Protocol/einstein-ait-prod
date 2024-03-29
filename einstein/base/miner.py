@@ -72,6 +72,10 @@ class BaseMinerNeuron(BaseNeuron):
             KeyboardInterrupt: If the miner is stopped by a manual interruption.
             Exception: For unforeseen errors during the miner's operation, which are logged for diagnosis.
         """
+        
+        # # Create event loop
+        # loop = asyncio.new_event_loop()
+        # asyncio.set_event_loop(loop)
 
         # Check that miner is registered on the network.
         self.sync()
@@ -148,7 +152,6 @@ class BaseMinerNeuron(BaseNeuron):
         This method facilitates the use of the miner in a 'with' statement.
         """
         self.run_in_background_thread()
-
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
