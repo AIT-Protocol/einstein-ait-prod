@@ -75,19 +75,19 @@ class ZephyrMiner(Miner):
         After the generation you must end the generation with 'The final answer is: {the answer}'.
 
 Template:
-chat1 = [
+Example_1 = [
     {"role": "user", "content": "How do I solve for x in the equation 2x + 3 = 7?"},
-    {"role": "assistant", "content": "To solve for x in the equation 2x + 3 = 7, we first subtract 3 from both sides of the equation to get 2x = 4. Then, we divide both sides by 2 to find x = 2. The final answer is: 2."}
+    {"role": "assistant", "content": "To solve for x in the equation 2x + 3 = 7, we first subtract 3 from both sides of the equation to get 2x = 4. Then, we divide both sides by 2 to find x = 2. The final answer is: 2"}
 ]
 
-chat2 = [
+Example_2 = [
     {"role": "user", "content": "What is the area of a circle with a radius of 4cm?"},
-    {"role": "assistant", "content": "The area of a circle is calculated using the formula A = πr^2, where A is the area and r is the radius of the circle. Plugging in a radius of 4cm, the calculation is A = π(4)^2 = 16π cm^2. The final answer is: 16π cm^2."}
+    {"role": "assistant", "content": "The area of a circle is calculated using the formula A = πr^2, where A is the area and r is the radius of the circle. Plugging in a radius of 4cm, the calculation is A = π(4)^2 = 16π cm^2. The final answer is: 16π"}
 ]
 
-chat3 = [
+Example_3 = [
     {"role": "user", "content": "If I have a rectangle with a length of 8cm and a width of 3cm, what is its perimeter?"},
-    {"role": "assistant", "content": "The perimeter of a rectangle can be found using the formula P = 2(l + w), where P is the perimeter, l is the length, and w is the width. For a rectangle with a length of 8cm and a width of 3cm, the calculation is P = 2(8 + 3) = 2(11) = 22cm. The final answer is: > 22cm."}
+    {"role": "assistant", "content": "The perimeter of a rectangle can be found using the formula P = 2(l + w), where P is the perimeter, l is the length, and w is the width. For a rectangle with a length of 8cm and a width of 3cm, the calculation is P = 2(8 + 3) = 2(11) = 22cm. The final answer is: 22cm"}
 ]
         """
         
