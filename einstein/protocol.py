@@ -115,14 +115,7 @@ class ClientRequestSynapse(bt.Synapse):
         description="",
         allow_mutation=False
     )
-
-    question_file: str = pydantic.Field(
-        ...,
-        title="Question File",
-        description="",
-        allow_mutation=False
-    )
-
+    
     question_markdown: str = pydantic.Field(
         ...,
         title="Question Markdown",

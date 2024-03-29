@@ -3,10 +3,13 @@ from einstein.tasks import (
     MathTask,
 )
 from einstein.tools import (
-    MathDataset
+    MathDataset,
 )
 
+from .tools.datasets import Context
+
 from transformers import Pipeline
+
 
 def create_task(llm_pipeline: Pipeline, task_name: str, problem: str) -> Task:
     math_based_tasks = ["math"]
@@ -16,7 +19,7 @@ def create_task(llm_pipeline: Pipeline, task_name: str, problem: str) -> Task:
         task = MathTask(llm_pipeline=llm_pipeline, context=dataset.next())
 
         # context = Context(
-        #     problem=problem,
+        #     content=problem,
         #     solution='',
         #     solution_raw='',
         #     topic='',

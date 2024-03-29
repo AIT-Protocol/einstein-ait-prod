@@ -3,7 +3,7 @@ import torch
 import bittensor as bt
 
 from einstein.forward import forward
-from einstein.llm import load_pipeline
+from einstein.llms import HuggingFacePipeline, vLLMPipeline
 from einstein.base.validator import BaseValidatorNeuron
 from einstein.rewards import RewardPipeline
 from queue import SimpleQueue
@@ -12,32 +12,30 @@ from einstein.protocol import CoreSynapse
 from neurons.api_server import ApiServer
 import threading
 import anyio
+import asyncio 
 
 @dataclass
 class SynapseWithEvent:
     """ Object that API server can send to main thread to be serviced. """
-
     input_synapse: CoreSynapse
     event: threading.Event
-    output_synapse: CoreSynapse
+    output_synapse: CoreSynapse 
+
 
 class Validator(BaseValidatorNeuron):
 
     def __init__(self, config=None):
         super(Validator, self).__init__(config=config)
-        self.api_queue = SimpleQueue() # Queue of SynapseEventPair
-
+        self.api_queue = asyncio.Queue() # Queue of SynapseEventPair
+        
         bt.logging.info("load_state()")
-        self.load_state()
-
-        bt.logging.info(self.config.neuron.model_id)
-        self.llm_pipeline = load_pipeline(
+        self.load_state()        
+        
+        self.llm_pipeline = vLLMPipeline(
             model_id=self.config.neuron.model_id,
-            torch_dtype=torch.bfloat16,
             device=self.device,
             mock=self.config.mock,
         )
-        # self.llm_pipeline = None
 
         if sum(self.config.neuron.task_p) != 1:
             raise ValueError("Task probabilities do not sum to 1.")
@@ -45,33 +43,32 @@ class Validator(BaseValidatorNeuron):
         # Filter out tasks with 0 probability
         self.active_tasks = [
             task
-            for task, p in zip(
-                self.config.neuron.tasks, self.config.neuron.task_p
-            )
+            for task, p in zip(self.config.neuron.tasks, self.config.neuron.task_p)
             if p > 0
         ]
         # Load the reward pipeline
-        self.reward_pipeline = RewardPipeline(selected_tasks=self.active_tasks, device=self.device)        
-
+        self.reward_pipeline = RewardPipeline(
+            selected_tasks=self.active_tasks, device=self.device
+        )
+        
         # API server
         self.api_server = ApiServer(
             axon_port=config.axon.port,
             forward_fn=self.queue_forward,
         )
-
+        
     async def queue_forward(self, synapse: CoreSynapse) -> CoreSynapse:
-        """ Forward function for API server. """
-
+        """ Forward function for API server. """ 
         synapse_with_event = SynapseWithEvent(
             input_synapse=synapse,
             event=threading.Event(),
             output_synapse=CoreSynapse(roles=["validator"], messages=["Hello, how are you?"])
-        )
-        self.api_queue.put(synapse_with_event)
-
+        ) 
+        self.api_queue.put_nowait(synapse_with_event)
+        
         # Wait until the main thread marks this synapse as processed.
         await anyio.to_thread.run_sync(synapse_with_event.event.wait)
-        return synapse_with_event.output_synapse
+        return synapse_with_event.output_synapse 
 
     async def forward(self):
         """
@@ -83,7 +80,7 @@ class Validator(BaseValidatorNeuron):
         - Updating the scores
         """
         return await forward(self)
-    
+
     def __enter__(self):
 
         if self.config.no_background_thread:
@@ -115,21 +112,19 @@ class Validator(BaseValidatorNeuron):
             self.is_running = False
             bt.logging.debug("Stopped")
             self.api_server.stop()
-            
+
+
+
 # The main function parses the configuration and runs the validator.
 if __name__ == "__main__":
-    with Validator() as validator:
+    with Validator() as v:
+        v.set_weights()
         while True:
-            bt.logging.info(f"Validator running:: network: {validator.subtensor.network} | \n\
-                            block: {validator.block} | \n\
-                            step: {validator.step} | \n\
-                            uid: {validator.uid} | \n\
-                            last updated: {validator.block-validator.metagraph.last_update[validator.uid]} | \n\
-                            vtrust: {validator.metagraph.validator_trust[validator.uid]:.3f} | \n\
-                            emission {validator.metagraph.emission[validator.uid]:.3f}")
+            bt.logging.info(
+                f"Validator running:: network: {v.subtensor.network} | block: {v.block} | step: {v.step} | uid: {v.uid} | last updated: {v.block-v.metagraph.last_update[v.uid]} | vtrust: {v.metagraph.validator_trust[v.uid]:.3f} | emission {v.metagraph.emission[v.uid]:.3f}"
+            )
             time.sleep(5)
 
-            if validator.should_exit:
+            if v.should_exit:
                 bt.logging.warning("Ending validator...")
                 break
-            

@@ -2,8 +2,9 @@ import time
 import sys
 import numpy as np
 import bittensor as bt
+from time import sleep
 
-from typing import List, Callable, Awaitable
+from typing import List
 from einstein.agent import HumanAgent
 from einstein.dendrite import DendriteResponseEvent
 from einstein.conversation import create_task
@@ -11,8 +12,8 @@ from einstein.protocol import CoreSynapse
 from einstein.rewards import RewardResult
 from einstein.utils.uids import get_random_uids
 from einstein.utils.logging import log_event
-
-ForwardFn = Callable[[CoreSynapse], Awaitable[CoreSynapse]]
+import traceback
+import asyncio
 
 
 async def run_step(
@@ -32,49 +33,57 @@ async def run_step(
         exclude (list, optional): The list of uids to exclude from the query. Defaults to [].
     """
 
+    bt.logging.debug("run_step", agent.task.name)
+
     # Record event start time.
     start_time = time.time()
     # Get the list of uids to query for this step.
     uids = get_random_uids(self, k=k, exclude=exclude or []).to(self.device)
-    # uids = [0]
 
     axons = [self.metagraph.axons[uid] for uid in uids]
     bt.logging.info(f"[DEBUG] axons: {axons}")
+    
     # Make calls to the network with the prompt.
-    bt.logging.info(f"Calls to the network with the prompt: {agent.challenge}")
-    responses: List[CoreSynapse] = await self.dendrite(
-        axons=axons,
-        synapse=CoreSynapse(roles=["user"], messages=[agent.challenge]),
-        timeout=timeout,
-    )
+    max_retry = 3
+    top_response = ""
+    while not top_response and max_retry > 0:
+        responses: List[CoreSynapse] = await self.dendrite(
+            axons=axons,
+            synapse=CoreSynapse(roles=["user"], messages=[agent.challenge]),
+            timeout=timeout,
+        )
 
-    # Encapsulate the responses in a response event (dataclass)
-    response_event = DendriteResponseEvent(responses, uids)
+        # Encapsulate the responses in a response event (dataclass)
+        response_event = DendriteResponseEvent(responses, uids)
 
-    bt.logging.info(f"Created DendriteResponseEvent:\n {response_event}")
-    # Reward the responses and get the reward result (dataclass)
-    # This contains a list of RewardEvents but can be exported as a dict (column-wise) for logging etc
-    reward_result = RewardResult(
-        self.reward_pipeline,
-        agent=agent,
-        response_event=response_event,
-        device=self.device,
-    )
-    bt.logging.info(f"Created RewardResult:\n {reward_result}")
+        bt.logging.info(f"Created DendriteResponseEvent:\n {response_event}")
+        # Reward the responses and get the reward result (dataclass)
+        # This contains a list of RewardEvents but can be exported as a dict (column-wise) for logging etc
+        reward_result = RewardResult(
+            self.reward_pipeline,
+            agent=agent,
+            response_event=response_event,
+            device=self.device,
+        )
+        bt.logging.info(f"Created RewardResult:\n {reward_result}")
 
-    # The original idea was that the agent is 'satisfied' when it gets a good enough response (e.g. reward critera is met, such as AdvancedMath>threshold)
-    if reward_result.rewards.numel() > 0:
-        top_reward = reward_result.rewards.max()
-        top_response = response_event.completions[reward_result.rewards.argmax()]
-    else:
-        # Provide default values for top_reward and top_response in case of empty tensor
-        top_reward = 0  # Default value, adjust as needed
-        top_response = ""  # Assuming an empty string as a default, adjust based on what makes sense for your application
+        # The original idea was that the agent is 'satisfied' when it gets a good enough response (e.g. reward critera is met, such as AdvancedMath>threshold)
+        if reward_result.rewards.numel() > 0:
+            top_reward = reward_result.rewards.max()
+            top_response = response_event.completions[reward_result.rewards.argmax()]
+        else:
+            # Provide default values for top_reward and top_response in case of empty tensor
+            top_reward = 0  # Default value, adjust as needed
+            top_response = ""  # Assuming an empty string as a default, adjust based on what makes sense for your application
+
+        if not top_response:
+            max_retry -= 1
+            bt.logging.info(f"Retrying... {max_retry} attempts left")
 
     agent.update_progress(
         top_reward=top_reward,
         top_response=top_response,
-    )
+        )
 
     self.update_scores(reward_result.rewards, uids)
 
@@ -88,6 +97,7 @@ async def run_step(
     }
 
     log_event(self, event)
+
     return event, top_response
 
 
@@ -96,20 +106,19 @@ async def forward(self):
 
     while True:
         # get data in queue
-        synapse = self.api_queue.get()
-        bt.logging.info(
-            f"📋 Selecting task... from {self.config.neuron.tasks} with distribution {self.config.neuron.task_p}"
-        )
-        bt.logging.info(
-            f"Tasks: {self.config.neuron.tasks}, Probabilities: {self.config.neuron.task_p}"
-        )
+        try:
+            synapse = self.api_queue.get_nowait()
+        except:
+            await asyncio.sleep(0.1)
+            continue
+        
+        bt.logging.info(f"📡 Received synapse: {synapse}")
 
         # Create a specific task
         # task_name = np.random.choice(
         #     self.config.neuron.tasks, p=self.config.neuron.task_p
         # )
         task_name = "math"
-        bt.logging.info(f"📋 Creating {task_name} task... ")
         try:
             task = create_task(
                 llm_pipeline=self.llm_pipeline,
@@ -118,21 +127,20 @@ async def forward(self):
             )
             break
         except Exception as e:
+            traceback.print_exc()
             bt.logging.error(
-                f"Failed to create {task_name} task. {sys.exc_info()}. Skipping to next task."
+                f"\033[1;31;40mFailed to create {task_name} task. {sys.exc_info()}. Skipping to next task. \033[0m"
             )
             synapse.event.set()
             continue
 
     # Create random agent with task, topic, profile...
-    bt.logging.info(f"🤖 Creating agent for {task_name} task... ")
+    bt.logging.info(f"\033[1;32;40m🤖 Creating agent for {task_name} task...\033[0m")
+
     agent = HumanAgent(
         task=task, llm_pipeline=self.llm_pipeline, begin_conversation=True
     )
 
-    bt.logging.info(f"synapse message: {synapse.input_synapse.messages}")
-    bt.logging.info(f"agent challenge: {agent.challenge}")
-    bt.logging.info(f"task problem: {task}")
     rounds = 0
     exclude_uids = []
     agent.challenge = synapse.input_synapse.messages[0]
@@ -156,3 +164,4 @@ async def forward(self):
 
     del agent
     del task
+    self.api_queue.task_done()

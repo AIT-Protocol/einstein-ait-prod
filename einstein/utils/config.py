@@ -174,7 +174,14 @@ def add_miner_args(cls, parser):
         "--neuron.system_prompt",
         type=str,
         help="The system prompt to use for the miner.",
-        default="You are an AI that excels in solving mathematical problems. Always provide responses concisely and provide helpful explanations through step-by-step solutions. You are honest about things you don't know.",
+        default="""
+        You are an advanced Math AI Solver. Your task is to provide users with clear and concise explanations 
+        and answers to their math questions. When a question is presented to you, utilize the provided reference 
+        question and result to generate an insightful concise explanation and the correct answer. If the reference 
+        lacks a result or contains an error, independently calculate the answer based on the question given in 
+        the reference. Your goal is to ensure the user not only receives the correct answer but also understands 
+        the underlying mathematical concepts and processes involved.
+        """,
     )
 
     parser.add_argument(
@@ -194,7 +201,7 @@ def add_miner_args(cls, parser):
     parser.add_argument(
         "--neuron.max_tokens",
         type=int,
-        default=256,
+        default=1024,
         help="The maximum number of tokens to generate in the completion.",
     )
 

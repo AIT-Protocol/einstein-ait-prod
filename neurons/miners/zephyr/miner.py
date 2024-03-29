@@ -3,64 +3,95 @@ import torch
 import argparse
 import bittensor as bt
 
-from neurons.miner import Miner
+# Bittensor Miner Template:
+import einstein
 from einstein.protocol import CoreSynapse
-from langchain_core.messages import SystemMessage, HumanMessage
-from langchain_community.llms.huggingface_pipeline import HuggingFacePipeline
-from langchain.prompts import ChatPromptTemplate
-from langchain_core.output_parsers import StrOutputParser
+from einstein.llms.hf import load_hf_pipeline, HuggingFaceLLM, HuggingFacePipeline
+from einstein.llms.hf import HuggingFaceLLM
 
-from NumPAL import NumPAL
+# import base miner class which takes care of most of the boilerplate
+from neurons.miner import Miner
 
-import warnings
-
-warnings.filterwarnings("ignore")
 
 class ZephyrMiner(Miner):
+    """
+    Base miner which runs Zephyr (https://huggingface.co/HuggingFaceH4/zephyr-7b-beta)    
+    This requires a GPU with at least 20GB of memory.
+    To run this miner from the project root directory:
+    
+    pm2 start neurons/miners/zephyr/miner.py \
+    --name "s3_zephyr" \
+    --interpreter "python" \
+    -- --netuid <netuid> \
+    --subtensor.network <network> \
+    --wallet.name <wallet_name> \
+    --wallet.hotkey <wallet_hotkey> \
+    --axon.port <port> \
+    --axon.external_port <port> \
+    --logging.debug True \
+    --neuron.model_id HuggingFaceH4/zephyr-7b-beta \
+    --neuron.max_tokens 1024 \
+    --neuron.do_sample True \
+    --wandb.on True \
+    --wandb.entity sn3 \
+    --wandb.project_name miners_experiments
+    """
+
     @classmethod
     def add_args(cls, parser: argparse.ArgumentParser):
+        """
+        Adds arguments to the command line parser.
+        """
         super().add_args(parser)
 
     def __init__(self, config=None):
         super().__init__(config=config)
 
-
         model_kwargs = None
         if self.config.neuron.load_quantized:
             bt.logging.info("Loading quantized model...")
             model_kwargs = dict(
-                max_new_tokens=self.config.neuron.max_tokens,
-                temperature=self.config.neuron.temperature,
                 torch_dtype=torch.float16,
-                top_k=self.config.neuron.top_k,# default :50
-                top_p=self.config.neuron.top_p,# default :0.95
                 load_in_8bit=True,
-                )
-
-        if not self.config.numpal.off:
-            bt.logging.info("⚡️ \033[1;33mSupercharging the model with NumPAL...\033[0m")
-        else:
-            bt.logging.info(f"NumPAL is turned off...")
-        if not self.config.numpal.verbose.off:
-            bt.logging.info(f"NumPAL verbose mode is turned on...")
-        else:
-            bt.logging.info(f"NumPAL verbose mode is turned off...")
+            )
 
         if self.config.wandb.on:
-            self.identity_tags = ("zephyr_miner",)
+            self.identity_tags = ("Zephyr_miner",)
 
             if self.config.neuron.load_quantized:
                 self.identity_tags += ("8bits_quantization",)
+
+        self.llm_pipeline = HuggingFacePipeline(
+            model_id=self.config.neuron.model_id,
+            torch_dtype=torch.float16,
+            device=self.device,
+            mock=self.config.mock,
+            model_kwargs=model_kwargs,
+        )
+
+        self.system_prompt = """
+        You are an advanced Math AI Solver. Your task is to provide users with clear and concise explanations 
+        and answers to their math questions.
+        After the generation you must end the generation with 'The final answer is: {the answer}'.
+
+Template:
+chat1 = [
+    {"role": "user", "content": "How do I solve for x in the equation 2x + 3 = 7?"},
+    {"role": "assistant", "content": "To solve for x in the equation 2x + 3 = 7, we first subtract 3 from both sides of the equation to get 2x = 4. Then, we divide both sides by 2 to find x = 2. The final answer is: 2."}
+]
+
+chat2 = [
+    {"role": "user", "content": "What is the area of a circle with a radius of 4cm?"},
+    {"role": "assistant", "content": "The area of a circle is calculated using the formula A = πr^2, where A is the area and r is the radius of the circle. Plugging in a radius of 4cm, the calculation is A = π(4)^2 = 16π cm^2. The final answer is: 16π cm^2."}
+]
+
+chat3 = [
+    {"role": "user", "content": "If I have a rectangle with a length of 8cm and a width of 3cm, what is its perimeter?"},
+    {"role": "assistant", "content": "The perimeter of a rectangle can be found using the formula P = 2(l + w), where P is the perimeter, l is the length, and w is the width. For a rectangle with a length of 8cm and a width of 3cm, the calculation is P = 2(8 + 3) = 2(11) = 22cm. The final answer is: > 22cm."}
+]
+        """
         
-        model_id = "HuggingFaceH4/zephyr-7b-beta"
-        self.llm_pipeline = HuggingFacePipeline.from_model_id(
-            model_id=model_id,
-            task="text-generation",
-            pipeline_kwargs=model_kwargs,
-            device=0
-            )
-        
-        self.system_prompt = self.config.neuron.system_prompt
+        bt.logging.info(f"🧠 Zephyr current system prompt: {self.system_prompt}")
 
     async def forward(self, synapse: CoreSynapse) -> CoreSynapse:
         """
@@ -81,58 +112,30 @@ class ZephyrMiner(Miner):
             t0 = time.time()
             bt.logging.debug(f"📧 Message received, forwarding synapse: {synapse}")
 
-            question = synapse.messages[-1]
-            
-            if not self.config.numpal.off:
+            prompt = synapse.messages[-1]
+            bt.logging.debug(f"💬 Querying Zephyr: {prompt}")
 
-                bt.logging.debug("\033[1;32m💬 Running Math Code on NumPAL\033[0m")
-                verbose_on = not self.config.numpal.verbose.off
-                pal = NumPAL.from_math_prompt(self.llm_pipeline, verbose=verbose_on)
-                q_r = pal.invoke(question)
-                
-                prompt = "You are an advanced Math AI Solver. Your task is to provide users with clear and concise explanations and answers to their math questions. When a question is presented to you, utilize the provided reference question and result to generate an insightful concise explanation and the correct answer. If the reference lacks a result or contains an error, independently calculate the answer based on the question given in the reference. Your goal is to ensure the user not only receives the correct answer but also understands the underlying mathematical concepts and processes involved."
-                
-                messages = [
-                    SystemMessage(
-                        content=prompt
-                        ),
-                    HumanMessage(
-                        content=str(q_r)
-                        ),
-                    ]
-
-                response = self.llm_pipeline.invoke(messages)
-                
-            else:
-                prompt = ChatPromptTemplate.from_messages(
-                    [("system", self.system_prompt), ("user", "{input}")]
-                )
-                chain = prompt | self.llm_pipeline | StrOutputParser()
-
-                role = synapse.roles[-1]
-                message = synapse.messages[-1]
-
-                bt.logging.debug(f"💬 Querying: {prompt}")
-
-                response = chain.invoke({"role": role, "input": message})
+            response = HuggingFaceLLM(
+                llm_pipeline=self.llm_pipeline,
+                system_prompt=self.system_prompt,
+                max_new_tokens=self.config.neuron.max_tokens,
+                do_sample=self.config.neuron.do_sample,
+            ).query(
+                message=prompt,  # For now we just take the last message
+                role="user",
+                disregard_system_prompt=False,
+            )
 
             synapse.completion = response
             synapse_latency = time.time() - t0
 
-            if self.config.wandb.on and not self.config.numpal.on:
+            if self.config.wandb.on:
+                # TODO: Add system prompt to wandb config and not on every step
                 self.log_event(
                     timing=synapse_latency,
-                    prompt=message,
+                    prompt=prompt,
                     completion=response,
-                    system_prompt=self.system_prompt
-                )
-
-            if self.config.wandb.on and self.config.numpal.on:
-                self.log_event(
-                    timing=synapse_latency,
-                    prompt=message,
-                    completion=response,
-                    system_prompt=prompt,
+                    system_prompt=self.system_prompt,
                 )
 
             bt.logging.debug(f"✅ Served Response: {response}")

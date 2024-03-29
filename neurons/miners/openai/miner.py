@@ -3,6 +3,8 @@ import time
 import bittensor as bt
 import argparse
 
+import urllib.parse
+
 # Bittensor Miner Template:
 import einstein
 from einstein.protocol import CoreSynapse
@@ -13,19 +15,17 @@ from neurons.miner import Miner
 from langchain.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 from langchain_community.callbacks import get_openai_callback
+from dotenv import load_dotenv, find_dotenv
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.messages import SystemMessage, HumanMessage
-from dotenv import load_dotenv, find_dotenv
-
-from langchain.chat_models import ChatOpenAI
-from dotenv import load_dotenv, find_dotenv
 
 # Supercharger:
 from NumPAL import NumPAL
-
+import traceback
 import warnings
 
 warnings.filterwarnings("ignore")
+
 
 class OpenAIMiner(Miner):
     """Langchain-based miner which uses OpenAI's API as the LLM.
@@ -44,7 +44,7 @@ class OpenAIMiner(Miner):
         super().__init__(config=config)
 
         bt.logging.info(f"Initializing with model {self.config.neuron.model_id}...")
-                
+        
         if not self.config.numpal.off:
             bt.logging.info("⚡️ \033[1;33mSupercharging the model with NumPAL...\033[0m")
         else:
@@ -55,7 +55,6 @@ class OpenAIMiner(Miner):
         else:
             bt.logging.info(f"NumPAL verbose mode is turned off...")
         
-
         if self.config.wandb.on:
             self.identity_tags = ("openai_miner",) + (self.config.neuron.model_id,)
 
@@ -69,10 +68,14 @@ class OpenAIMiner(Miner):
             max_tokens=self.config.neuron.max_tokens,
             temperature=self.config.neuron.temperature,
         )
-
         
         system_prompt = self.config.neuron.system_prompt
-        self.system_prompt = system_prompt
+        self.system_prompt = system_prompt + """\nMandatory:
+        - If the answer is a symbol, you must say 'So the final answer is: (that symbol)'.
+        - Unless not symbol, you always end the entire sentence with 'So the final answer is: (the answer)'
+        """
+        
+        bt.logging.info(f'Your current system prompt is: {self.system_prompt}')
         
         self.accumulated_total_tokens = 0
         self.accumulated_prompt_tokens = 0
@@ -116,67 +119,60 @@ class OpenAIMiner(Miner):
         the miner's intended operation. This method demonstrates a basic transformation of input data.
         """
         try:
-            with get_openai_callback() as cb:
-                t0 = time.time()
-                bt.logging.debug(f"📧 Message received, forwarding synapse: {synapse}")
+            # with get_openai_callback() as cb:
+            t0 = time.time()
+            bt.logging.debug(f"📧 Message received, forwarding synapse: {synapse}")
+            
+            # Create a chain of operations to process the input
+            prompt = ChatPromptTemplate.from_messages([("system", self.system_prompt), ("user", "{input}")])
+            chain = prompt | self.model | StrOutputParser()
+            
+            # Get the math question from the last message
+            role = synapse.roles[-1]
+            raw_message = synapse.messages[-1]
+            message = urllib.parse.parse_qs(raw_message)
+            
+            math_question = message.get("question_text", [""])[0]
+            message_type = message.get("question_type", [""])[0]
+            
+            # If NumPAL is turned on, use it to process the math question
+            if not self.config.numpal.off:
 
-                role = synapse.roles[-1]
-                message = synapse.messages[-1]
-                list_msg = message.split("|")
-                message_type = list_msg.pop()
-                question = "|".join(list_msg)
-                prompt = self.system_prompt or "You are an advanced Math AI Solver. Your task is to provide users with clear and concise explanations and answers to their math questions. When a question is presented to you, utilize the provided reference question and result to generate an insightful concise explanation and the correct answer. If the reference lacks a result or contains an error, independently calculate the answer based on the question given in the reference. Your goal is to ensure the user not only receives the correct answer but also understands the underlying mathematical concepts and processes involved."
+                bt.logging.debug("\033[1;32m💬 Running Math script on NumPAL\033[0m")
+                verbose_on = not self.config.numpal.verbose.off
+                
+                q_r = NumPAL.from_math_prompt(self.model, verbose=verbose_on).invoke(math_question)
+                
+                response = chain.invoke({"role": role, "input": str(q_r)})
 
-                if message_type.lower() == "regular":
-                    prompt = "Please you can awnser the question."
-                elif message_type.lower() == "analytic":
-                    prompt = "Please provide statistical graphs of this data"
+            # If NumPAL is turned off, use the model to process the math question
+            else:
 
-                if not self.config.numpal.off:
+                bt.logging.debug(f"💬 Querying OpenAI...")
 
-                    # Initialize NumPAL and solve the math problem
-                    bt.logging.debug("\033[1;32m💬 Running Math Code on NumPAL\033[0m")
-                    verbose_on = not self.config.numpal.verbose.off
-                    pal = NumPAL.from_math_prompt(self.model, verbose=verbose_on)
-                    q_r = pal.invoke(question)
+                response = chain.invoke({"role": role, "input": math_question})
 
-                    messages = [
-                        SystemMessage(
-                            content=prompt
-                        ),
-                        HumanMessage(
-                            content=str(q_r)
-                        ),
-                    ]
-                    response = self.model.invoke(messages)
-                    output_parser = StrOutputParser()
-                    response = output_parser.invoke(response)
+            synapse.completion = response
+            synapse_latency = time.time() - t0
+            
+            bt.logging.info(f'📧 \033[1;34mMessage received: {math_question}\033[0m')
+            bt.logging.info(f'📧 \033[1;34mResponse: {response}\033[0m')
 
-                else:
-                    prompt = ChatPromptTemplate.from_messages(
-                        [("system", prompt), ("user", "{input}")]
-                    )
-                    chain = prompt | self.model | StrOutputParser()
-                    bt.logging.info(f"💬 Querying openai: {chain}")
-                    response = chain.invoke({"role": role, "input": question})
+            if self.config.wandb.on:
+                self.log_event(
+                    timing=synapse_latency,
+                    prompt=math_question,
+                    completion=response,
+                    system_prompt=self.system_prompt,
+                    # extra_info=self.get_cost_logging(cb),
+                )
 
-                bt.logging.info(f"📧 Response received: {response}")
+            bt.logging.debug(f"✅ \033[1;32mResponse Served: \033[0m {synapse}")
+            self.step += 1
 
-                synapse.completion = response
-                synapse_latency = time.time() - t0
-
-                if self.config.wandb.on:
-                    self.log_event(
-                        timing=synapse_latency,
-                        prompt=message,
-                        completion=response,
-                        system_prompt=self.system_prompt,
-                        extra_info=self.get_cost_logging(cb),
-                    )
-
-            bt.logging.debug(f"✅ Served Response: {response}")
             return synapse
         except Exception as e:
+            traceback.print_exc()
             bt.logging.error(f"Error in forward: {e}")
             synapse.completion = "Error: " + str(e)
         finally:
@@ -189,7 +185,7 @@ class OpenAIMiner(Miner):
 if __name__ == "__main__":
     with OpenAIMiner() as miner:
         while True:
-            bt.logging.info("Miner running...", time.time())
+            miner.log_status()
             time.sleep(5)
 
             if miner.should_exit:

@@ -1,11 +1,6 @@
-# Define the version of the template module.
-__version__ = "1.1.2"
+__version__ = "1.2.2"
 version_split = __version__.split(".")
-__spec_version__ = (
-    (10000 * int(version_split[0]))
-    + (100 * int(version_split[1]))
-    + (1 * int(version_split[2]))
-)
+__spec_version__ = (100 * int(version_split[0])) + (10 * int(version_split[1])) + (1 * int(version_split[2]))
 
 # Import all submodules.
 from . import protocol
@@ -19,4 +14,4 @@ from . import forward
 from . import agent
 from . import conversation
 from . import dendrite
-from . import llm
+from .llms import hf
