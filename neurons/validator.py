@@ -52,9 +52,13 @@ class Validator(BaseValidatorNeuron):
             selected_tasks=self.active_tasks, device=self.device
         )
         
+        self.axon = bt.axon(wallet=self.wallet, config=self.config)
+        
+        bt.logging.debug(f'You are on the port: {self.axon.port}')
+        
         # API server
         self.api_server = ApiServer(
-            axon_port=config.axon.port,
+            axon_port=self.axon.port,
             forward_fn=self.queue_forward,
         )
         
