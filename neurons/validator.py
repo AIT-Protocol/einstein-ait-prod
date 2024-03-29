@@ -52,9 +52,10 @@ class Validator(BaseValidatorNeuron):
             selected_tasks=self.active_tasks, device=self.device
         )
         
-        self.axon = bt.axon(wallet=self.wallet, config=self.config)
-        
+        bt.logging.debug(f'Your external ip: {self.axon.ip}')
+        bt.logging.debug(f'Your ip: {self.axon.external_ip}')
         bt.logging.debug(f'You are on the port: {self.axon.port}')
+        bt.logging.debug(f'Your external port: {self.axon.external_port}')
         
         # API server
         self.api_server = ApiServer(
