@@ -41,7 +41,7 @@ async def run_step(
     uids = get_random_uids(self, k=k, exclude=exclude or []).to(self.device)
 
     axons = [self.metagraph.axons[uid] for uid in uids]
-    bt.logging.info(f"[DEBUG] axons: {axons}")
+    bt.logging.debug(f"Axons: {axons}")
     
     # Make calls to the network with the prompt.
     max_retry = 3
