@@ -45,7 +45,9 @@ class BaseValidatorNeuron(BaseNeuron):
         )
 
         # Init sync with the network. Updates the metagraph.
+        bt.logging.info('Base validator syncing')
         self.sync()
+        bt.logging.info('End Base validator syncing')
 
         # Serve axon to enable external connections.
         if not self.config.neuron.axon_off:
@@ -107,7 +109,9 @@ class BaseValidatorNeuron(BaseNeuron):
         """
 
         # Check that validator is registered on the network.
+        bt.logging.info("Base validator sync in run()")
         self.sync()
+        bt.logging.info("End Base validator sync in run()")
 
         if not self.config.neuron.axon_off:
             bt.logging.info(
@@ -127,6 +131,7 @@ class BaseValidatorNeuron(BaseNeuron):
 
                 # Run multiple forwards concurrently.
                 try:
+                    # asyncio.run(self.concurrent_forward())
                     self.loop.run_until_complete(self.concurrent_forward())
                 except torch.cuda.OutOfMemoryError as e:
                     bt.logging.error(f"Out of memory error: {e}")
@@ -262,7 +267,7 @@ class BaseValidatorNeuron(BaseNeuron):
 
     def resync_metagraph(self):
         """Resyncs the metagraph and updates the hotkeys and moving averages based on the new metagraph."""
-        bt.logging.info("\033[1;33mResyncing the metagraph...\033[0m")
+        # bt.logging.info("\033[1;33mResyncing the metagraph...\033[0m")
 
         # Copies state of metagraph before syncing.
         previous_metagraph = copy.deepcopy(self.metagraph)

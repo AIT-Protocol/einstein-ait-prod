@@ -3,6 +3,8 @@ import time
 import bittensor as bt
 import argparse
 
+import urllib.parse
+
 # Bittensor Miner Template:
 import einstein
 from einstein.protocol import CoreSynapse
@@ -19,6 +21,7 @@ from langchain_core.messages import SystemMessage, HumanMessage
 
 # Supercharger:
 from NumPAL import NumPAL
+import traceback
 import warnings
 
 warnings.filterwarnings("ignore")
@@ -121,16 +124,16 @@ class OpenAIMiner(Miner):
             bt.logging.debug(f"📧 Message received, forwarding synapse: {synapse}")
             
             # Create a chain of operations to process the input
-            prompt = ChatPromptTemplate.from_messages(
-                [("system", self.system_prompt), ("user", "{input}")]
-                )
-            
+            prompt = ChatPromptTemplate.from_messages([("system", self.system_prompt), ("user", "{input}")])
             chain = prompt | self.model | StrOutputParser()
             
-            role = synapse.roles[-1]
-            
             # Get the math question from the last message
-            math_question = synapse.messages[-1]
+            role = synapse.roles[-1]
+            raw_message = synapse.messages[-1]
+            message = urllib.parse.parse_qs(raw_message)
+            
+            math_question = message.get("question_text", [""])[0]
+            message_type = message.get("question_type", [""])[0]
             
             # If NumPAL is turned on, use it to process the math question
             if not self.config.numpal.off:
@@ -169,6 +172,7 @@ class OpenAIMiner(Miner):
 
             return synapse
         except Exception as e:
+            traceback.print_exc()
             bt.logging.error(f"Error in forward: {e}")
             synapse.completion = "Error: " + str(e)
         finally:
