@@ -51,8 +51,8 @@ pm2 start neurons/miners/zephyr/miner.py \
 --neuron.top_k 50 \
 --neuron.top_p 0.95 \
 --wandb.on True \
---wandb.entity sn3 \
---wandb.project_name miners_experiments
+--wandb.entity {your entity} \
+--wandb.project_name {your project name} \
 ```
 
 You will need 20GB of GPU to run this miner in comfortable settings.
