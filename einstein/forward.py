@@ -108,13 +108,15 @@ async def forward(self):
         # get data in queue
         try:
             synapse = self.api_queue.get_nowait()
+            _message = urllib.parse.parse_qs(synapse.input_synapse.messages[0])
+            _problem = _message.get('question_text', [''])[0]
+            bt.logging.info(f"📡 Received synapse: {synapse}")
         except:
             synapse = None
+            _problem = ''
             bt.logging.info(f"🤖 Generate problem")
             pass
         
-        bt.logging.info(f"📡 Received synapse: {synapse}")
-
         # Create a specific task
         # task_name = np.random.choice(
         #     self.config.neuron.tasks, p=self.config.neuron.task_p
@@ -124,7 +126,7 @@ async def forward(self):
             task = create_task(
                 llm_pipeline=self.llm_pipeline,
                 task_name=task_name,
-                problem=synapse.input_synapse.messages[0] if synapse else '',
+                problem=_problem,
             )
             break
         except Exception as e:
@@ -144,14 +146,13 @@ async def forward(self):
 
     rounds = 0
     exclude_uids = []
-    if synapse: 
-        agent.challenge = synapse.input_synapse.messages[0]
-    else: 
-        agent.challenge = urllib.parse.urlencode({
-            "question_text": task.query, # change to task.challenge
-            "question_markdown": "",
-            "question_type": ""
-        })
+    
+    # convert challenge into miner's message format
+    agent.challenge = urllib.parse.urlencode({
+        "question_text": agent.challenge,
+        "question_markdown": "",
+        "question_type": ""
+    })
         
     while not agent.finished:
         # when run_step is called, the agent updates its progress
