@@ -8,13 +8,13 @@ from typing import List
 from einstein.agent import HumanAgent
 from einstein.dendrite import DendriteResponseEvent
 from einstein.conversation import create_task
-from einstein.protocol import CoreSynapse
+from einstein.protocol import CoreSynapse, ClientRequestSynapse
 from einstein.rewards import RewardResult
 from einstein.utils.uids import get_random_uids
 from einstein.utils.logging import log_event
 import traceback
 import asyncio
-
+import urllib.parse
 
 async def run_step(
     self, agent: HumanAgent, k: int, timeout: float, exclude: list = None
@@ -108,12 +108,15 @@ async def forward(self):
         # get data in queue
         try:
             synapse = self.api_queue.get_nowait()
+            _message = urllib.parse.parse_qs(synapse.input_synapse.messages[0])
+            _problem = _message.get('question_text', [''])[0]
+            bt.logging.info(f"📡 Received synapse: {synapse}")
         except:
-            await asyncio.sleep(0.1)
-            continue
+            synapse = None
+            _problem = ''
+            bt.logging.info(f"🤖 Generate problem")
+            pass
         
-        bt.logging.info(f"📡 Received synapse: {synapse}")
-
         # Create a specific task
         # task_name = np.random.choice(
         #     self.config.neuron.tasks, p=self.config.neuron.task_p
@@ -123,7 +126,7 @@ async def forward(self):
             task = create_task(
                 llm_pipeline=self.llm_pipeline,
                 task_name=task_name,
-                problem=synapse.input_synapse.messages[0],
+                problem=_problem,
             )
             break
         except Exception as e:
@@ -131,7 +134,7 @@ async def forward(self):
             bt.logging.error(
                 f"\033[1;31;40mFailed to create {task_name} task. {sys.exc_info()}. Skipping to next task. \033[0m"
             )
-            synapse.event.set()
+            if synapse: synapse.event.set()
             continue
 
     # Create random agent with task, topic, profile...
@@ -143,7 +146,14 @@ async def forward(self):
 
     rounds = 0
     exclude_uids = []
-    agent.challenge = synapse.input_synapse.messages[0]
+    
+    # convert challenge into miner's message format
+    agent.challenge = urllib.parse.urlencode({
+        "question_text": agent.challenge,
+        "question_markdown": "",
+        "question_type": ""
+    })
+        
     while not agent.finished:
         # when run_step is called, the agent updates its progress
         event, top_response = await run_step(
@@ -153,10 +163,12 @@ async def forward(self):
             timeout=self.config.neuron.timeout,
             exclude=exclude_uids,
         )
-        synapse.output_synapse = CoreSynapse(
-            roles=["validator"], messages=[top_response], completion=top_response
-        )
-        synapse.event.set()
+        if synapse:
+            synapse.output_synapse = CoreSynapse(
+                roles=["validator"], messages=[top_response], completion=top_response
+            )
+            synapse.event.set()
+            self.api_queue.task_done()
         exclude_uids += event["uids"]
         task.complete = True
 
@@ -164,4 +176,10 @@ async def forward(self):
 
     del agent
     del task
-    self.api_queue.task_done()
+    if not synapse:
+        # Make sure that the miner finishes the process of the current request and returns a response
+        # Otherwise, there is a case where the validator sends a new request while the miner is still processing the old one
+        # Then, the response of the old request will be applied as the response of the new request
+        bt.logging.info("💤 Sleep 5 seconds...")
+        time.sleep(5)
+            

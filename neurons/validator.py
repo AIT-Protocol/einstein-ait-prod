@@ -54,7 +54,7 @@ class Validator(BaseValidatorNeuron):
         
         # API server
         self.api_server = ApiServer(
-            axon_port=self.axon.port,
+            axon_port=self.config.axon.port,
             forward_fn=self.queue_forward,
         )
         
