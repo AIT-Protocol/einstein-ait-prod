@@ -12,6 +12,8 @@ from einstein.llms.hf import HuggingFaceLLM
 # import base miner class which takes care of most of the boilerplate
 from neurons.miner import Miner
 
+# extract message
+import urllib.parse
 
 class ZephyrMiner(Miner):
     """
@@ -112,7 +114,14 @@ Example_3 = [
             t0 = time.time()
             bt.logging.debug(f"📧 Message received, forwarding synapse: {synapse}")
 
-            prompt = synapse.messages[-1]
+            # Get the math question from the last message
+            role = synapse.roles[-1]
+            raw_message = synapse.messages[-1]
+            message = urllib.parse.parse_qs(raw_message)
+            math_question = message.get("question_text", [''])[0]
+            message_type = message.get("question_type", [''])[0]
+
+            prompt = math_question
             bt.logging.debug(f"💬 Querying Zephyr: {prompt}")
 
             response = HuggingFaceLLM(
