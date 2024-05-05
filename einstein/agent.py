@@ -23,10 +23,15 @@ class HumanAgent(vLLM_LLM):
         return self.progress == 1
 
     system_prompt_template = textwrap.dedent(
-        """This is a roleplaying game where you are impersonating {mood} human user with a specific persona. As a human, you are using AI assistant to {desc} related to {topic} ({subtopic}) in a {tone} tone. You don't need to greet the assistant or be polite, unless this is part of your persona. The spelling and grammar of your messages should also reflect your persona.
+        """
+        This is a roleplaying game where you are impersonating {mood} human user with a specific persona.
+        As a human, you are using AI assistant to {desc} related to {topic} ({subtopic}) in a {tone} tone.
+        You don't need to greet the assistant or be polite, unless this is part of your persona.
+        The spelling and grammar of your messages should also reflect your persona.
+        You don't need to generate the answer for the question yourself.
 
         Your singular focus is to use the assistant to {goal}: {query}
-    """
+        """
     )
 
     def __init__(
