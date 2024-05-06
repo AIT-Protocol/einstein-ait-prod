@@ -142,12 +142,12 @@ def add_miner_args(cls, parser):
         default='miner',
     )
 
-    parser.add_argument(
-        "--neuron.model_id",
-        type=str,
-        help="The model to use for the validator.",
-        default="gpt-3.5-turbo-1106",
-    )
+    # parser.add_argument(
+    #     "--neuron.model_id",
+    #     type=str,
+    #     help="The model to use for the validator.",
+    #     default="gpt-3.5-turbo-1106",
+    # )
 
     parser.add_argument(
         "--neuron.load_quantized",
@@ -252,6 +252,26 @@ def add_miner_args(cls, parser):
         type=str,
         help="Wandb project to log to.",
         default="einstein-miner",
+    )
+
+def add_zephyr_miner_args(cls, parser):
+    """Add zephyr miner specific arguments to the parser."""
+
+    parser.add_argument(
+        "--neuron.model_id",
+        type=str,
+        help="The model to use for the validator.",
+        default="HuggingFaceH4/zephyr-7b-beta",
+    )
+
+def add_openai_miner_args(cls, parser):
+    """Add openai miner specific arguments to the parser."""
+
+    parser.add_argument(
+        "--neuron.model_id",
+        type=str,
+        help="The model to use for the validator.",
+        default="gpt-3.5-turbo-1106",
     )
 
 def add_validator_args(cls, parser):

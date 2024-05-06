@@ -8,6 +8,7 @@ import urllib.parse
 # Bittensor Miner Template:
 import einstein
 from einstein.protocol import CoreSynapse
+from einstein.utils.config import add_openai_miner_args
 
 # import base miner class which takes care of most of the boilerplate
 from neurons.miner import Miner
@@ -39,6 +40,7 @@ class OpenAIMiner(Miner):
         Adds OpenAI-specific arguments to the command line parser.
         """
         super().add_args(parser)
+        add_openai_miner_args(cls, parser)
 
     def __init__(self, config=None):
         super().__init__(config=config)
