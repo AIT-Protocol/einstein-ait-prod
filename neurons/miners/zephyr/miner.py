@@ -8,6 +8,7 @@ import einstein
 from einstein.protocol import CoreSynapse
 from einstein.llms.hf import load_hf_pipeline, HuggingFaceLLM, HuggingFacePipeline
 from einstein.llms.hf import HuggingFaceLLM
+from einstein.utils.config import add_zephyr_miner_args
 
 # import base miner class which takes care of most of the boilerplate
 from neurons.miner import Miner
@@ -45,10 +46,13 @@ class ZephyrMiner(Miner):
         Adds arguments to the command line parser.
         """
         super().add_args(parser)
+        add_zephyr_miner_args(cls, parser)
 
     def __init__(self, config=None):
         super().__init__(config=config)
 
+        bt.logging.info(f"Initializing with model {self.config.neuron.model_id}...")
+        
         model_kwargs = None
         if self.config.neuron.load_quantized:
             bt.logging.info("Loading quantized model...")
