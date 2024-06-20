@@ -2,14 +2,14 @@
 <div align="center">
   <h1>🧠Einstein - AIT 🤖</h1>
 
-## **Testnet uid: 78 \ Mainnet uid: {}🌐**
+## **Testnet uid: 78 \ Mainnet uid: 35 🌐**
 
 ---
 
 ### 🚀 The Incentivized Internet <!-- omit in toc -->
 
 
-[Discord](https://discord.com/invite/GvEMzStVN6) • [AIT Discord](https://discord.gg/aitprotocols) • [AIT Telegram](AIT_Protocol) • [Subnet Roadmap & Info](https://einstein-ait.notion.site/SN3-Einstein-AIT-Subnet-1f6a76b53b094fd994526443a9937228)
+[Discord](https://discord.com/invite/GvEMzStVN6) • [AIT Discord](https://discord.gg/aitprotocols) • [AIT Telegram](AIT_Protocol)
 
 </div>
 
@@ -17,36 +17,22 @@
 
 This repository is the **official codebase for the Einstein - AIT subnet**. It contains the code for the validators and miners that are used to validate and mine on the subnet.
 
-# 📚 Introduction
+# Subnet Purpose
 
-**About Einstein-AIT Subnet:**
+- Fine tuning competition of AI/ML models specialized in mathematics + computational reasoning. 
+- Produce revenue generating subscription business through a front-end Math + Data analytics LLM application, that also leverages RLFH via real user feedback and response rating. 
+- Open-source and fine tune a custom AI/ML model trained on a robust data-set including a cleaned MIT-IDSS mathematics data set. 
 
-Einstein-AIT subnet has a primary focus on developing an AI/ML model that specializes in mathematics, computational thinking and data analysis.  Einstein-AIT subnet has two near term objectives:
 
-1. The launch of **NumPAL** LLM chain supercharger, and
-2. The launch of a Hugging Face leaderboard, fine tuning competition for specialized AI/ML models with a focus on complex mathematics. This includes the open sourcing of AIT’s custom AI/ML which can be cloned, iterated and improved upon with custom data sets by mining competitors. 
+## Subnet Objective
 
-**Currently**, we have released an LLM chain (supercharger), we call **NumPAL** which can be hooked into any LLM (custom model or API) to accomplish the following: 
+To provide real world users with an ever improving AI/ML model that can compute complex mathematics, and data analytics with advanced computational reasoning skills able to adapt to the education level of the user submitting the query, providing an appropriate justification / reasoning set for how the model achieved the result to a specific query.
 
-1. Improve response accuracy,
-2. Minimize the cost of iteration, and
-3. Minimize processing time over iterations
+## Subnet Product Breakdown
 
-We’ve charted the results of a benchmarking session where we took ChatGPT 3.5 supercharged by NumPAL, against ChatGPT 4 Turbo, [See results here](https://www.notion.so/SN3-Einstein-AIT-Subnet-1f6a76b53b094fd994526443a9937228?pvs=21).
-
-**How NumPAL works:** NumPAL is a LLM chain that forces the LLM to ‘think’ before it (’speaks’) spits out a generalized response. NumPAL forces the LLM to write python code, for example by calculating the result of a math problem, and running that code through it’s built-in python executor, finally sending that result back to the LLM to generate a response with a logical explanation to the prompter. 
-
-**NumPAL can be used to supercharge any LLM / miner on the Bittensor network 👀**
-
-## 🎯 Mission
-
-At Einstein-AIT, our mission is to enhance the Bittensor ecosystem by providing a robust and reliable subnet dedicated to the computation of complex mathematical operations and logical reasoning. We strive to empower startups and enterprises by offering seamless access to our advanced computational resources through user-friendly APIs, tailored for real-world applications.
-
-Our mission extends to creating symbiotic relationships with other subnets, fostering a culture of mutual growth and knowledge exchange, thereby adding capabilities to the broader network of models and applications.
-
-## 🔮 Vision
-
-We are dedicated to aligning with Bittensor's core values of permissionless participation and the decentralization of services. Our vision is to cultivate a subnet that embodies these principles, fostering an environment where innovation thrives on the collective strength and diversity of its participants. Together, we are building the foundation for a more open, collaborative, and decentralized world.
+- **Open source:** a specialized mathematics ML model trained on various data sets including proprietary data from MIT - Institute for data systems and society (IDSS).
+- **Hugging Face Leaderboard:** for fine tuning the model and providing ease of access for miners to compete with custom models of their choice.
+- **Front-end application:** with revenue generating business model.
 
 # 💻 Compute Requirements
 
