@@ -3,7 +3,7 @@ import bittensor as bt
 from typing import List
 from dataclasses import dataclass
 from einstein.protocol import StreamCoreSynapse
-from einstein.utils.misc import serialize_exeption_to_string
+from einstein.utils.misc import serialize_exception_to_string
 
 @dataclass
 class SynapseStreamResult:
