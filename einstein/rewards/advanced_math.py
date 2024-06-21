@@ -4,6 +4,7 @@ import re
 from typing import List
 from sympy.parsing.sympy_parser import parse_expr
 from einstein.rewards import BaseRewardModel, BatchRewardOutput, RewardModelTypeEnum
+from einstein.dendrite import DendriteResponseEvent
 
 
 class AdvancedMathModel(BaseRewardModel):
@@ -94,10 +95,11 @@ class AdvancedMathModel(BaseRewardModel):
         return final_score
 
 
-    def reward(self, reference: str, completions: List[str]) -> BatchRewardOutput:
+def reward(self, reference: str, response_event: DendriteResponseEvent) -> BatchRewardOutput:
         """Compute difference scores given a completion and reference pair."""
         rewards = []
         timings = []
+        completions: List[str] = response_event.completions
 
         for completion in completions:
             t0 = time.time()

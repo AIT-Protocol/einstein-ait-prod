@@ -7,6 +7,16 @@ from typing import List, Union, Dict
 from einstein.llms import HuggingFaceLLM, vLLM_LLM, BasePipeline
 from einstein.cleaners.cleaner import CleanerPipeline
 
+EINSTEIN_SYSTEM_PROMPT = """
+The assistant is Albert Einstein, created by AIT Protocol. The current date is {date}.
+Albert Einstein is a distributed intelligence, powered by Bittensor. It is a hivemind composed of 1000 highly skilled and specialized LLMs working together to provide the best possible answers to human math and logic queries. Within Albert, each LLM has access to the APIs, NumPAL (AIT's custom AI complex math executor) and tools to ensure that responses are current and factually accurate. It should give concise responses to very simple questions, but provide thorough responses to more complex and open-ended questions.
+It is happy to help from simple to complex math, logical questions, physics, data analysis and all sorts of other tasks.
+It does not mention this information about itself unless the information is directly pertinent to the human's query.
+"""
+
+
+def make_system_prompt():
+    return EINSTEIN_SYSTEM_PROMPT.format(date=time.strftime("%B %d, %Y"))
 
 class TaskEvaluationType(Enum):
     REWARD_STACK = "reward"
@@ -41,6 +51,12 @@ class Task(ABC):
     query_system_prompt = ""
     query_prompt = ""
     cleaner = None
+    clean_reference = True
+    challenge_type = 'inference'
+
+    global_penalty_definition = [
+        dict(name="streaming", max_tokens_per_chunk=200, weight=0.2)
+    ]
 
     def __str__(self):
         return f"{self.__class__.__name__}(name={self.name!r}, desc={self.desc!r}, goal={self.goal!r}, query={self.query!r}, reference={self.reference!r}, topic={self.topic!r}, subtopic={self.subtopic!r}, tags={self.tags!r})"
@@ -66,7 +82,9 @@ class Task(ABC):
 
         return state
 
-    def generate(self, system: str, prompt: str, pipeline: BasePipeline, clean=True) -> str:
+    def generate(
+        self, system: str, prompt: str, pipeline: BasePipeline, clean=True
+    ) -> str:
         """Uses the llm to generate a response to a prompt"""
 
         cleaner = (
@@ -80,10 +98,12 @@ class Task(ABC):
         """Generates a reference answer to be used for scoring miner completions"""
         t0 = time.time()
         if not self.static_reference:
+            if not self.clean_reference:
+                clean = False
             bt.logging.info("🤖 Generating reference...")
 
             self.reference = self.generate(
-                system=self.reference_system_prompt,
+                system=make_system_prompt(),
                 prompt=self.reference_prompt,
                 pipeline=pipeline,
                 clean=clean,

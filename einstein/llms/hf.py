@@ -1,15 +1,36 @@
 import time
 from typing import List, Dict
 import bittensor as bt
-from transformers import pipeline
+from transformers import BitsAndBytesConfig, pipeline, AutoTokenizer, TextIteratorStreamer
 from einstein.mock import MockPipeline
 from einstein.cleaners.cleaner import CleanerPipeline
-from transformers import pipeline
 from einstein.llms import BasePipeline, BaseLLM
 
+class CustomTextIteratorStreamer(TextIteratorStreamer):
+    """
+    TextIteratorStreamer stores print-ready text in a queue, to be used by a downstream application as an iterator.
+    The queue is thread-safe and can be used to stream data from the model to the application.
+    TextIteratorStreamer has internal methods to raise a StopIteration if a stop signal is received
+    (stop signal is when the value returned from the Queue is None), but this is not flexible enough.
+    Therefore, we add methods to check and clean the queue manually.
+    """
+
+    def has_data(self):
+        """Check if the queue has data."""
+        return not self.text_queue.empty()
+
+    def clear_queue(self):
+        """Clear the queue."""
+        with self.text_queue.mutex:  # ensures that the queue is cleared safely in a multi-threaded environment
+            self.text_queue.queue.clear()
 
 def load_hf_pipeline(
-    model_id, device=None, torch_dtype=None, mock=False, model_kwargs: dict = None
+    model_id: str,
+    device=None,
+    torch_dtype=None,
+    mock=False,
+    model_kwargs: dict = None,
+    return_streamer: bool = False,
 ):
     """Loads the HuggingFace pipeline for the LLM, or a mock pipeline if mock=True"""
 
@@ -18,25 +39,43 @@ def load_hf_pipeline(
 
     if not device.startswith("cuda"):
         bt.logging.warning("Only crazy people run this on CPU. It is not recommended.")
+        
+    try:
+        tokenizer = AutoTokenizer.from_pretrained(
+            model_id
+        )  # model_id is usually the name of the tokenizer.
+    except Exception as e:
+        bt.logging.error(f"Failed to load tokenizer from model_id: {model_id}.")
+        raise e
+
+    streamer = CustomTextIteratorStreamer(tokenizer=tokenizer)
 
     # model_kwargs torch type definition conflicts with pipeline torch_dtype, so we need to differentiate them
     if model_kwargs is None:
         llm_pipeline = pipeline(
             "text-generation",
             model=model_id,
+            tokenizer=tokenizer,
             device=device,
             torch_dtype=torch_dtype,
+            streamer=streamer,
         )
     else:
+        kwargs = model_kwargs.copy()
+        kwargs["bnb_4bit_compute_dtype"] = kwargs.pop("torch_dtype")
+        quant_config = BitsAndBytesConfig(**kwargs)
         llm_pipeline = pipeline(
             "text-generation",
             model=model_id,
+            tokenizer=tokenizer,
             device_map=device,
-            model_kwargs=model_kwargs,
+            quant_config=quant_config,
+            streamer=streamer,
         )
 
+    if return_streamer:
+        return llm_pipeline, streamer
     return llm_pipeline
-
 
 class HuggingFacePipeline(BasePipeline):
     def __init__(
@@ -46,15 +85,30 @@ class HuggingFacePipeline(BasePipeline):
         torch_dtype=None,
         mock=False,
         model_kwargs: dict = None,
+        return_streamer: bool = False,
+        gpus: int = 1,
+        llm_max_allowed_memory_in_gb: int = 0
     ):
         super().__init__()
         self.model = model_id
         self.device = device
         self.torch_dtype = torch_dtype
         self.mock = mock
-        self.pipeline = load_hf_pipeline(
-            model_id, device, torch_dtype, mock, model_kwargs
+
+        package = load_hf_pipeline(
+            model_id=model_id,
+            device=device,
+            torch_dtype=torch_dtype,
+            mock=mock,
+            model_kwargs=model_kwargs,
+            return_streamer=return_streamer,
         )
+
+        if return_streamer:
+            self.pipeline, self.streamer = package
+        else:
+            self.pipeline = package
+
         self.tokenizer = self.pipeline.tokenizer
 
     def __call__(self, composed_prompt: str, **kwargs: dict) -> str:
@@ -111,11 +165,30 @@ class HuggingFaceLLM(BaseLLM):
 
         return response
 
+    def stream(
+        self,
+        message: str,
+        role: str = "user",
+    ):
+        messages = self.messages + [{"content": message, "role": role}]
+        prompt = self._make_prompt(messages)
+
+        bt.logging.debug("Starting LLM streaming process...")
+        streamer = CustomTextIteratorStreamer(tokenizer=self.llm_pipeline.tokenizer)
+        _ = self.llm_pipeline(prompt, streamer=streamer, **self.model_kwargs)
+
+        return streamer
+
+
     def __call__(self, messages: List[Dict[str, str]]):
         return self.forward(messages=messages)
 
     def _make_prompt(self, messages: List[Dict[str, str]]):
-        return self.llm_pipeline.tokenizer.apply_chat_template(
+        # The tokenizer.tokenizer is used for a integration with vllm and the mock pipeline, for real hf application, use:
+        # return self.llm_pipeline.tokenizer.apply_chat_template(
+        #     messages, tokenize=False, add_generation_prompt=True
+        # )
+        return self.llm_pipeline.tokenizer.tokenizer.apply_chat_template(
             messages, tokenize=False, add_generation_prompt=True
         )
 
@@ -141,7 +214,9 @@ if __name__ == "__main__":
     torch_dtype = "float16"
     mock = True
 
-    llm_pipeline = HuggingFacePipeline(model_id, device, torch_dtype, mock)
+    llm_pipeline = HuggingFacePipeline(
+        model_id=model_id, device=device, torch_dtype=torch_dtype, mock=mock
+    )
 
     llm = HuggingFaceLLM(llm_pipeline, "You are a helpful AI assistant")
 

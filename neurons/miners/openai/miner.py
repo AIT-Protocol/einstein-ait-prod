@@ -2,23 +2,20 @@ import os
 import time
 import bittensor as bt
 import argparse
-
+from starlette.types import Send
+from functools import partial
+from typing import Dict, Awaitable, List
 import urllib.parse
 
-# Bittensor Miner Template:
-import einstein
-from einstein.protocol import CoreSynapse
+from einstein.base.einstein_miner import BaseStreamMiner
+from einstein.protocol import StreamCoreSynapse
 from einstein.utils.config import add_openai_miner_args
-
-# import base miner class which takes care of most of the boilerplate
-from neurons.miner import Miner
 
 from langchain.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 from langchain_community.callbacks import get_openai_callback
 from dotenv import load_dotenv, find_dotenv
 from langchain_core.output_parsers import StrOutputParser
-from langchain_core.messages import SystemMessage, HumanMessage
 
 # Supercharger:
 from NumPAL import NumPAL
@@ -27,8 +24,7 @@ import warnings
 
 warnings.filterwarnings("ignore")
 
-
-class OpenAIMiner(Miner):
+class OpenAIMiner(BaseStreamMiner):
     """Langchain-based miner which uses OpenAI's API as the LLM.
 
     You should also install the dependencies for this miner, which can be found in the requirements.txt file in this directory.
@@ -46,17 +42,17 @@ class OpenAIMiner(Miner):
         super().__init__(config=config)
 
         bt.logging.info(f"Initializing with model {self.config.neuron.model_id}...")
-        
+
         if not self.config.numpal.off:
             bt.logging.info("⚡️ \033[1;33mSupercharging the model with NumPAL...\033[0m")
         else:
             bt.logging.info(f"NumPAL is turned off...")
-        
+
         if not self.config.numpal.verbose.off:
             bt.logging.info(f"NumPAL verbose mode is turned on...")
         else:
             bt.logging.info(f"NumPAL verbose mode is turned off...")
-        
+
         if self.config.wandb.on:
             self.identity_tags = ("openai_miner",) + (self.config.neuron.model_id,)
 
@@ -70,15 +66,15 @@ class OpenAIMiner(Miner):
             max_tokens=self.config.neuron.max_tokens,
             temperature=self.config.neuron.temperature,
         )
-        
+
         system_prompt = self.config.neuron.system_prompt
         self.system_prompt = system_prompt + """\nMandatory:
         - If the answer is a symbol, you must say 'So the final answer is: (that symbol)'.
         - Unless not symbol, you always end the entire sentence with 'So the final answer is: (the answer)'
         """
-        
+
         bt.logging.info(f'Your current system prompt is: {self.system_prompt}')
-        
+
         self.accumulated_total_tokens = 0
         self.accumulated_prompt_tokens = 0
         self.accumulated_completion_tokens = 0
@@ -106,84 +102,80 @@ class OpenAIMiner(Miner):
             "accumulated_total_cost": self.accumulated_total_cost,
         }
 
-    async def forward(self, synapse: CoreSynapse) -> CoreSynapse:
-        """
-        Processes the incoming synapse by performing a predefined operation on the input data.
-        This method should be replaced with actual logic relevant to the miner's purpose.
+    def forward(self, synapse: StreamCoreSynapse) -> Awaitable:
+        async def _forward(
+            self,
+            synapse: StreamCoreSynapse,
+            init_time: float,
+            timeout_threshold: float,
+            send: Send,
+        ):
+            buffer = []
+            accumulated_chunks = []
+            accumulated_chunks_timings = []
+            messages = []
+            temp_completion = ""  # for wandb logging
+            timeout_reached = False
+            try:
+                t0 = time.time()
+                bt.logging.debug(f"📧 Message received, forwarding synapse: {synapse}")
 
-        Args:
-            synapse (CoreSynapse): The synapse object containing the 'dummy_input' data.
+                # Create a chain of operations to process the input
+                prompt = ChatPromptTemplate.from_messages([("system", self.system_prompt), ("user", "{input}")])
+                chain = prompt | self.model | StrOutputParser()
 
-        Returns:
-            CoreSynapse: The synapse object with the 'dummy_output' field set to twice the 'dummy_input' value.
+                # Get the math question from the last message
+                role = synapse.roles[-1]
+                raw_message = synapse.messages[-1]
+                message = urllib.parse.parse_qs(raw_message)
 
-        The 'forward' function is a placeholder and should be overridden with logic that is appropriate for
-        the miner's intended operation. This method demonstrates a basic transformation of input data.
-        """
-        try:
-            # with get_openai_callback() as cb:
-            t0 = time.time()
-            bt.logging.debug(f"📧 Message received, forwarding synapse: {synapse}")
-            
-            # Create a chain of operations to process the input
-            prompt = ChatPromptTemplate.from_messages([("system", self.system_prompt), ("user", "{input}")])
-            chain = prompt | self.model | StrOutputParser()
-            
-            # Get the math question from the last message
-            role = synapse.roles[-1]
-            raw_message = synapse.messages[-1]
-            message = urllib.parse.parse_qs(raw_message)
-            
-            math_question = message.get("question_text", [""])[0]
-            message_type = message.get("question_type", [""])[0]
-            
-            # If NumPAL is turned on, use it to process the math question
-            if not self.config.numpal.off:
+                math_question = message.get("question_text", [""])[0]
+                message_type = message.get("question_type", [""])[0]
 
-                bt.logging.debug("\033[1;32m💬 Running Math script on NumPAL\033[0m")
-                verbose_on = not self.config.numpal.verbose.off
-                
-                q_r = NumPAL.from_math_prompt(self.model, verbose=verbose_on).invoke(math_question)
-                
-                response = chain.invoke({"role": role, "input": str(q_r)})
+                # If NumPAL is turned on, use it to process the math question
+                if not self.config.numpal.off:
+                    bt.logging.debug("\033[1;32m💬 Running Math script on NumPAL\033[0m")
+                    verbose_on = not self.config.numpal.verbose.off
 
-            # If NumPAL is turned off, use the model to process the math question
-            else:
+                    q_r = NumPAL.from_math_prompt(self.model, verbose=verbose_on).invoke(math_question)
 
-                bt.logging.debug(f"💬 Querying OpenAI...")
+                    response = chain.invoke({"role": role, "input": str(q_r)})
 
-                response = chain.invoke({"role": role, "input": math_question})
+                # If NumPAL is turned off, use the model to process the math question
+                else:
+                    bt.logging.debug(f"💬 Querying OpenAI...")
 
-            synapse.completion = response
-            synapse_latency = time.time() - t0
-            
-            bt.logging.info(f'📧 \033[1;34mMessage received: {math_question}\033[0m')
-            bt.logging.info(f'📧 \033[1;34mResponse: {response}\033[0m')
+                    response = chain.invoke({"role": role, "input": math_question})
 
-            if self.config.wandb.on:
-                self.log_event(
-                    timing=synapse_latency,
-                    prompt=math_question,
-                    completion=response,
-                    system_prompt=self.system_prompt,
-                    # extra_info=self.get_cost_logging(cb),
-                )
+                synapse.completion = response
+                synapse_latency = time.time() - t0
 
-            bt.logging.debug(f"✅ \033[1;32mResponse Served: \033[0m {synapse}")
-            self.step += 1
+                bt.logging.info(f'📧 \033[1;34mMessage received: {math_question}\033[0m')
+                bt.logging.info(f'📧 \033[1;34mResponse: {response}\033[0m')
 
-            return synapse
-        except Exception as e:
-            traceback.print_exc()
-            bt.logging.error(f"Error in forward: {e}")
-            synapse.completion = "Error: " + str(e)
-        finally:
-            if self.config.neuron.stop_on_forward_exception:
-                self.should_exit = True
-            return synapse
+                if self.config.wandb.on:
+                    self.log_event(
+                        timing=synapse_latency,
+                        prompt=math_question,
+                        completion=response,
+                        system_prompt=self.system_prompt,
+                        # extra_info=self.get_cost_logging(cb),
+                    )
 
+                bt.logging.debug(f"✅ \033[1;32mResponse Served: \033[0m {synapse}")
+                self.step += 1
 
-# This is the main function, which runs the miner.
+                return synapse
+            except Exception as e:
+                traceback.print_exc()
+                bt.logging.error(f"Error in forward: {e}")
+                synapse.completion = "Error: " + str(e)
+            finally:
+                if self.config.neuron.stop_on_forward_exception:
+                    self.should_exit = True
+                return synapse
+
+    # This is the main function, which runs the miner.
 if __name__ == "__main__":
     with OpenAIMiner() as miner:
         while True:

@@ -42,7 +42,8 @@ def check_config(cls, config: "bt.Config"):
     if not os.path.exists(config.neuron.full_path):
         os.makedirs(config.neuron.full_path, exist_ok=True)
 
-    if not config.neuron.dont_save_events:
+    log_level_exists = "EVENTS" in logger._core.levels
+    if not config.neuron.dont_save_events and not log_level_exists:
         # Add custom event logger for the events.
         logger.level("EVENTS", no=38, icon="📝")
         logger.add(
@@ -69,6 +70,21 @@ def add_args(cls, parser):
         type=str,
         help="Device to run on.",
         default="cuda" if torch.cuda.is_available() else "cpu",
+    )
+
+
+    parser.add_argument(
+        "--neuron.gpus",
+        type=int,
+        help="The number of visible GPUs to be considered in the llm initialization. This parameter currently reflects on the property `tensor_parallel_size` of vllm",
+        default=1,
+    )
+
+    parser.add_argument(
+        "--neuron.llm_max_allowed_memory_in_gb",
+        type=int,
+        help="The max gpu memory utilization set for initializing the model. This parameter currently reflects on the property `gpu_memory_utilization` of vllm",
+        default=62,
     )
 
     parser.add_argument(
@@ -150,10 +166,17 @@ def add_miner_args(cls, parser):
     # )
 
     parser.add_argument(
-        "--neuron.load_quantized",
+        "--neuron.load_in_8bit",
         type=str,
         default=False,
-        help="Load quantized model.",
+        help="Load quantized model in 8 bits. Note that this parameter only applies to hugging face miners.",
+    )
+
+    parser.add_argument(
+        "--neuron.load_in_4bit",
+        type=str,
+        default=False,
+        help="Load quantized model in 4 bits. Note that this parameter only applies to hugging face miners.",
     )
 
     parser.add_argument(
@@ -180,7 +203,7 @@ def add_miner_args(cls, parser):
         question and result to generate an insightful concise explanation and the correct answer. If the reference 
         lacks a result or contains an error, independently calculate the answer based on the question given in 
         the reference. Your goal is to ensure the user not only receives the correct answer but also understands 
-        the underlying mathematical concepts and processes involved.
+        the underlying mathematical concepts and processes involved. you always end the response with, "the final answer is: {answer}"
         """,
     )
 
@@ -234,6 +257,13 @@ def add_miner_args(cls, parser):
     )
 
     parser.add_argument(
+        "--neuron.should_force_model_loading",
+        type=bool,
+        default=False,
+        help="Force model loading independent of mock flag.",
+    )
+
+    parser.add_argument(
         "--wandb.on",
         type=bool,
         default=False,
@@ -254,13 +284,22 @@ def add_miner_args(cls, parser):
         default="einstein-miner",
     )
 
-def add_zephyr_miner_args(cls, parser):
-    """Add zephyr miner specific arguments to the parser."""
+
+    parser.add_argument(
+        "--neuron.streaming_batch_size",
+        type=int,
+        default=12,
+        help="Batch size in tokens for streaming forward calls.",
+    )
+
+
+def add_hf_miner_args(cls, parser):
+    """Add hf miner specific arguments to the parser."""
 
     parser.add_argument(
         "--neuron.model_id",
         type=str,
-        help="The model to use for the validator.",
+        help="The model to use for the hf miner.",
         default="HuggingFaceH4/zephyr-7b-beta",
     )
 
@@ -270,7 +309,7 @@ def add_openai_miner_args(cls, parser):
     parser.add_argument(
         "--neuron.model_id",
         type=str,
-        help="The model to use for the validator.",
+        help="The model to use for the open ai miner.",
         default="gpt-3.5-turbo-1106",
     )
 
@@ -288,7 +327,7 @@ def add_validator_args(cls, parser):
         "--neuron.model_id",
         type=str,
         help="The model to use for the validator.",
-        default="HuggingFaceH4/zephyr-7b-beta",
+        default="casperhansen/llama-3-70b-instruct-awq",
     )
 
     parser.add_argument(
@@ -312,7 +351,7 @@ def add_validator_args(cls, parser):
         "--neuron.timeout",
         type=float,
         help="The timeout for each forward call in seconds.",
-        default=10,
+        default=17,
     )
 
     parser.add_argument(
@@ -333,7 +372,7 @@ def add_validator_args(cls, parser):
         "--neuron.sample_size",
         type=int,
         help="The number of miners to query in a single step.",
-        default=50,
+        default=100,
     )
 
     parser.add_argument(
@@ -402,6 +441,13 @@ def add_validator_args(cls, parser):
         help="Only query a single hotkey per ip.",
         default=False,
         )
+
+    parser.add_argument(
+        "--neuron.forward_max_time",
+        type=int,
+        help="Max time to wait for a forward call to complete in seconds.",
+        default=120,
+    )
 
 def config(cls):
     """

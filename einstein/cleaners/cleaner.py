@@ -2,12 +2,15 @@ from typing import List, Dict
 
 import bittensor as bt
 
-from einstein.cleaners.all_cleaners import RemoveQuotes, RemoveRoles, PruneEnding
+from einstein.cleaners.all_cleaners import RemoveQuotes, RemoveRoles, PruneEnding, PrunePostQuestionText, RemoveTags, FirstQuestion
 
 SUPPORTED_CLEANERS = {
     "remove_quotes": RemoveQuotes,
     "remove_roles": RemoveRoles,
     "prune_ending": PruneEnding,
+    "remove_post_question_text": PrunePostQuestionText,
+    "first_question": FirstQuestion,
+    "remove_tags": RemoveTags,
 }
 
 

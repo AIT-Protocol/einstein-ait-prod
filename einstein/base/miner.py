@@ -6,10 +6,11 @@ import threading
 import bittensor as bt
 from einstein.base.neuron import BaseNeuron
 from einstein.utils.config import add_miner_args
+from einstein.protocol import StreamCoreSynapse
 from traceback import print_exception
 
 
-class BaseMinerNeuron(BaseNeuron):
+class BaseStreamMinerNeuron(BaseNeuron):
     """
     Base class for Bittensor miners.
     """
@@ -38,7 +39,7 @@ class BaseMinerNeuron(BaseNeuron):
         # Attach determiners which functions are called when servicing a request.
         bt.logging.info(f"Attaching forward function to miner axon.")
         self.axon.attach(
-            forward_fn=self.forward,
+            forward_fn=self._forward,
             blacklist_fn=self.blacklist,
             priority_fn=self.priority,
         )
@@ -91,12 +92,13 @@ class BaseMinerNeuron(BaseNeuron):
         self.axon.start()
 
         bt.logging.info(f"Miner starting at block: {self.block}")
+        last_update_block = 0
 
         # This loop maintains the miner's operations until intentionally stopped.
         try:
             while not self.should_exit:
                 while (
-                    self.block - self.metagraph.last_update[self.uid]
+                    self.block - last_update_block
                     < self.config.neuron.epoch_length
                 ):
                     # Wait before checking again.
@@ -108,6 +110,7 @@ class BaseMinerNeuron(BaseNeuron):
 
                 # Sync metagraph and potentially set weights.
                 self.sync()
+                last_update_block = self.block
                 self.step += 1
 
         # If someone intentionally stops the miner, it'll safely terminate operations.
@@ -207,3 +210,23 @@ class BaseMinerNeuron(BaseNeuron):
 
         # Sync the metagraph.
         self.metagraph.sync(subtensor=self.subtensor)
+
+    def _forward(self, synapse: StreamCoreSynapse) -> StreamCoreSynapse:
+        """
+        A wrapper method around the `forward` method that will be defined by the subclass.
+        This method acts as an intermediary layer to perform pre-processing before calling the
+        actual `forward` method implemented in the subclass. Specifically, it checks whether a
+        prompt is in cache to avoid reprocessing recent requests. If the prompt is not in the
+        cache, the subclass `forward` method is called.
+        Args:
+            synapse (StreamCoreSynapse): The incoming request object encapsulating the details of the request.
+        Returns:
+            StreamCoreSynapse: The response object to be sent back in reply to the incoming request, essentially
+            the filled synapse request object.
+        Raises:
+            ValueError: If the prompt is found in the cache indicating it was sent recently.
+        Example:
+            This method is not meant to be called directly but is invoked internally when a request
+            is received, and it subsequently calls the `forward` method of the subclass.
+        """
+        return self.forward(synapse=synapse)

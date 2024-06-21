@@ -8,7 +8,7 @@ import einstein
 from einstein.protocol import CoreSynapse
 
 # import base miner class which takes care of most of the boilerplate
-from neurons.miner import Miner
+from einstein.base.einstein_miner import Miner
 
 
 class PhraseMiner(Miner):

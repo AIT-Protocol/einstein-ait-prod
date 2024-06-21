@@ -15,23 +15,8 @@ git checkout main
 # Pull the latest changes from the main branch
 git pull
 
-# Installing package from the current directory
-pip install -e .
-
-# Uninstalling mathgenerator
-pip uninstall mathgenerator -y
-
-# Reinstalling requirements to ensure mathgenerator is installed appropriately
-pip install -r requirements.txt
-
-# Uninstalling uvloop to prevent conflicts with bittensor
-pip uninstall uvloop -y
-
-# Reinstalling pydantic and transformers with specific versions that work with our repository and vllm
-pip install pydantic==1.10.7 transformers==4.36.2
-
-# echo 
-echo -e "\e[1;32mThe Error on pip's dependency resolver is bound to happen, do not worry, this is normal behavior\e[0m"
+# Run the bash install.sh script
+bash scripts/install.sh
 
 # Check if the einstein-ait-prod repository is up to date if it is up to date, let them know
 if [ "$(git rev-parse HEAD)" != "$(git ls-remote origin -h refs/heads/main | cut -f1)" ]; then

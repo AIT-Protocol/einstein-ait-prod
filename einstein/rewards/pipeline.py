@@ -16,7 +16,7 @@ class RewardPipeline:
         self.selected_tasks = selected_tasks
         self.device = device
         self.validate_tasks()
-        self.load_pipeline()
+        self.load_reward_pipeline()
 
     def __getitem__(self, __key: str) -> BaseRewardModel:
         return self.reward_models.get(__key)
@@ -62,7 +62,7 @@ class RewardPipeline:
         if model_infos and expected_weight is not None and total_weight != expected_weight:
             raise ValueError(f"{definition} model {model_infos} weights do not sum to {expected_weight} (sum={total_weight})")
 
-    def load_pipeline(self):
+    def load_reward_pipeline(self):
         """Dynamically loads the reward models required by the selected tasks so that we only use the necessary resources."""
         active_reward_models = []
 
@@ -70,6 +70,7 @@ class RewardPipeline:
 
             active_reward_models += TASKS[task].reward_definition
             active_reward_models += TASKS[task].penalty_definition
+            active_reward_models += TASKS[task].global_penalty_definition
 
         # Instantiate only the required reward models
         reward_models = {}
