@@ -35,11 +35,13 @@ class Validator(BaseValidatorNeuron):
 
         self.llm_pipeline = vLLMPipeline(
             model_id=self.config.neuron.model_id,
+            gpus=self.config.neuron.gpus,
+            llm_max_allowed_memory_in_gb=self.config.neuron.llm_max_allowed_memory_in_gb,
             device=self.device,
             mock=self.config.mock,
-        )
+        )        
 
-        if sum(self.config.neuron.task_p) != 1:
+        if abs(1-sum(self.config.neuron.task_p)) > 0.001:
             raise ValueError("Task probabilities do not sum to 1.")
 
         # Filter out tasks with 0 probability
@@ -64,7 +66,7 @@ class Validator(BaseValidatorNeuron):
         synapse_with_event = SynapseWithEvent(
             input_synapse=synapse,
             event=threading.Event(),
-            output_synapse=CoreSynapse(
+            output_synapse=StreamCoreSynapse(
                 roles=["validator"], messages=["Hello, how are you?"]
             ),
         )
