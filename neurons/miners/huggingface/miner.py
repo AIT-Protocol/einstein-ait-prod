@@ -15,7 +15,7 @@ from einstein.base.einstein_miner import BaseStreamMiner
 from deprecated import deprecated # type: ignore
 import urllib.parse
 
-@deprecated(version="2.0+", reason="Class is deprecated, use openai miner for reference on example miner.")
+@deprecated(version="2.0.0+", reason="Class is deprecated, use openai miner for reference on example miner.")
 class HuggingFaceMiner(BaseStreamMiner):
     """
     Base miner which runs Zephyr (https://huggingface.co/HuggingFaceH4/zephyr-7b-beta)    
