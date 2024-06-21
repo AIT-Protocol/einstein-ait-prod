@@ -8,30 +8,31 @@ from einstein.base.validator import BaseValidatorNeuron
 from einstein.rewards import RewardPipeline
 from queue import SimpleQueue
 from dataclasses import dataclass
-from einstein.protocol importStreamCoreSynapse
+from einstein.protocol import StreamCoreSynapse
 from neurons.api_server import ApiServer
 import threading
 import anyio
-import asyncio 
+import asyncio
+
 
 @dataclass
 class SynapseWithEvent:
-    """ Object that API server can send to main thread to be serviced. """
-    input_synapse:StreamCoreSynapse
-    event: threading.Event
-    output_synapse:StreamCoreSynapse 
+    """Object that API server can send to main thread to be serviced."""
 
+    input_synapse: StreamCoreSynapse
+    event: threading.Event
+    output_synapse: StreamCoreSynapse
 
 
 class Validator(BaseValidatorNeuron):
 
     def __init__(self, config=None):
         super(Validator, self).__init__(config=config)
-        self.api_queue = asyncio.Queue() # Queue of SynapseEventPair
-        
+        self.api_queue = asyncio.Queue()  # Queue of SynapseEventPair
+
         bt.logging.info("load_state()")
-        self.load_state()        
-        
+        self.load_state()
+
         self.llm_pipeline = vLLMPipeline(
             model_id=self.config.neuron.model_id,
             device=self.device,
@@ -51,25 +52,27 @@ class Validator(BaseValidatorNeuron):
         self.reward_pipeline = RewardPipeline(
             selected_tasks=self.active_tasks, device=self.device
         )
-        
+
         # API server
         self.api_server = ApiServer(
             axon_port=self.config.axon.port,
             forward_fn=self.queue_forward,
         )
-        
-    async def queue_forward(self, synapse:StreamCoreSynapse) ->StreamCoreSynapse:
-        """ Forward function for API server. """ 
+
+    async def queue_forward(self, synapse: StreamCoreSynapse) -> StreamCoreSynapse:
+        """Forward function for API server."""
         synapse_with_event = SynapseWithEvent(
             input_synapse=synapse,
             event=threading.Event(),
-            output_synapse=CoreSynapse(roles=["validator"], messages=["Hello, how are you?"])
-        ) 
+            output_synapse=CoreSynapse(
+                roles=["validator"], messages=["Hello, how are you?"]
+            ),
+        )
         self.api_queue.put_nowait(synapse_with_event)
-        
+
         # Wait until the main thread marks this synapse as processed.
         await anyio.to_thread.run_sync(synapse_with_event.event.wait)
-        return synapse_with_event.output_synapse 
+        return synapse_with_event.output_synapse
 
     async def forward(self):
         """
@@ -113,8 +116,6 @@ class Validator(BaseValidatorNeuron):
             self.is_running = False
             bt.logging.debug("Stopped")
             self.api_server.stop()
-
-
 
 
 # The main function parses the configuration and runs the validator.

@@ -2,7 +2,7 @@
 # import asyncio
 # import bittensor as bt
 # from einstein.mock import MockDendrite, MockMetagraph, MockSubtensor
-# from einstein.protocol importStreamCoreSynapse
+# from einstein.protocol import StreamCoreSynapse
 
 # wallet = bt.MockWallet()
 # wallet.create(coldkey_use_password=False)

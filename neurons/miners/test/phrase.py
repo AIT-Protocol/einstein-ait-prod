@@ -5,7 +5,7 @@ import bittensor as bt
 
 # Bittensor Miner Template:
 import einstein
-from einstein.protocol importStreamCoreSynapse
+from einstein.protocol import StreamCoreSynapse
 
 # import base miner class which takes care of most of the boilerplate
 from einstein.base.einstein_miner import Miner
@@ -31,16 +31,16 @@ class PhraseMiner(Miner):
     def __init__(self, config=None):
         super().__init__(config=config)
 
-    async def forward(self, synapse:StreamCoreSynapse) ->StreamCoreSynapse:
+    async def forward(self, synapse: StreamCoreSynapse) -> StreamCoreSynapse:
 
         synapse.completion = self.config.neuron.phrase
         self.step += 1
         return synapse
 
-    async def blacklist(self, synapse:StreamCoreSynapse) -> typing.Tuple[bool, str]:
+    async def blacklist(self, synapse: StreamCoreSynapse) -> typing.Tuple[bool, str]:
         return False, "All good here"
 
-    async def priority(self, synapse:StreamCoreSynapse) -> float:
+    async def priority(self, synapse: StreamCoreSynapse) -> float:
         return 1e6
 
 
