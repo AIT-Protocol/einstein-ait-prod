@@ -1,31 +1,35 @@
-import wandb
+import wandb # type: ignore
 import time
 import typing
 import bittensor as bt
 
 # Bittensor Miner Template:
 import einstein
-from einstein.protocol import CoreSynapse
+from einstein.protocol import StreamCoreSynapse
+from einstein.base.miner import BaseStreamMinerNeuron
 
 # import base miner class which takes care of most of the boilerplate
-from einstein.base.miner import BaseMinerNeuron
 from datetime import datetime
+from typing import List, Dict
 
 
-class Miner(BaseMinerNeuron):
+class BaseStreamMiner(BaseStreamMinerNeuron):
     """
-    Your miner neuron class. You should use this class to define your miner's behavior. In particular, you should replace the forward function with your own logic. You may also want to override the blacklist and priority functions according to your needs.
-
-    This class inherits from the BaseMinerNeuron class, which in turn inherits from BaseNeuron. The BaseNeuron class takes care of routine tasks such as setting up wallet, subtensor, metagraph, logging directory, parsing config, etc. You can override any of the methods in BaseNeuron if you need to customize the behavior.
-
-    This class provides reasonable default behavior for a miner such as blacklisting unrecognized hotkeys, prioritizing requests based on stake, and forwarding requests to the forward function. If you need to define custom
+    Your miner neuron class. You should use this class to define your miner's behavior.
+    In particular, you should replace the forward function with your own logic. You may also want to override the blacklist and priority functions according to your needs.
+    This class inherits from the BaseMinerNeuron class, which in turn inherits from BaseNeuron.
+    The BaseNeuron class takes care of routine tasks such as setting up wallet, subtensor, metagraph, logging directory, parsing config, etc.
+    You can override any of the methods in BaseNeuron if you need to customize the behavior.
+    This class provides reasonable default behavior for a miner such as blacklisting unrecognized hotkeys, prioritizing requests based on stake, and forwarding requests to the forward function.
     """
-
+    
     def __init__(self, config=None):
-        super(Miner, self).__init__(config=config)
+        super().__init__(config=config)
         self.identity_tags = None
 
-    async def blacklist(self, synapse: CoreSynapse) -> typing.Tuple[bool, str]:
+    async def blacklist(
+        self, synapse: StreamCoreSynapse
+    ) -> typing.Tuple[bool, str]:
         """
         Determines whether an incoming request should be blacklisted and thus ignored. Your implementation should
         define the logic for blacklisting requests based on your needs and desired security parameters.
@@ -67,7 +71,7 @@ class Miner(BaseMinerNeuron):
         )
         return False, "Hotkey recognized!"
 
-    async def priority(self, synapse: CoreSynapse) -> float:
+    async def priority(self, synapse: StreamCoreSynapse) -> float:
         """
         The priority function determines the order in which requests are handled. More valuable or higher-priority
         requests are processed before others. You should design your own priority mechanism with care.
@@ -75,7 +79,7 @@ class Miner(BaseMinerNeuron):
         This implementation assigns priority to incoming requests based on the calling entity's stake in the metagraph.
 
         Args:
-            synapse (CoreSynapse): The synapse object that contains metadata about the incoming request.
+            synapse (StreamCoreSynapse): The synapse object that contains metadata about the incoming request.
 
         Returns:
             float: A priority score derived from the stake of the calling entity.
@@ -90,13 +94,13 @@ class Miner(BaseMinerNeuron):
         caller_uid = self.metagraph.hotkeys.index(
             synapse.dendrite.hotkey
         )  # Get the caller index.
-        prirority = float(
+        priority = float(
             self.metagraph.S[caller_uid]
         )  # Return the stake as the priority.
         bt.logging.trace(
-            f"Prioritizing {synapse.dendrite.hotkey} with value: ", prirority
+            f"Prioritizing {synapse.dendrite.hotkey} with value: ", priority
         )
-        return prirority
+        return priority
 
     def init_wandb(self):
         bt.logging.info("Initializing wandb...")
@@ -141,27 +145,38 @@ class Miner(BaseMinerNeuron):
 
     def log_event(
         self,
+        synapse: StreamCoreSynapse,
         timing: float,
-        prompt: str,
-        completion: str,
-        system_prompt: str,
+        messages,
+        accumulated_chunks: List[str] = [],
+        accumulated_chunks_timings: List[float] = [],
         extra_info: dict = {},
     ):
         if not getattr(self, "wandb_run", None):
             self.init_wandb()
 
+        dendrite_uid = self.metagraph.hotkeys.index(synapse.dendrite.hotkey)
         step_log = {
             "epoch_time": timing,
-            # "block": self.last_epoch_block,
-            "prompt": prompt,
-            "completion": completion,
-            "system_prompt": system_prompt,
-            "uid": self.metagraph.hotkeys.index(self.wallet.hotkey.ss58_address),
-            "stake": self.metagraph.S[self.uid].item(),
-            "trust": self.metagraph.T[self.uid].item(),
-            "incentive": self.metagraph.I[self.uid].item(),
-            "consensus": self.metagraph.C[self.uid].item(),
-            "dividends": self.metagraph.D[self.uid].item(),
+            # TODO: add block to logs in the future in a way that doesn't impact performance
+            # "block": self.block,
+            "messages": messages,
+            "accumulated_chunks": accumulated_chunks,
+            "accumulated_chunks_timings": accumulated_chunks_timings,
+            "validator_uid": dendrite_uid,
+            "validator_ip": synapse.dendrite.ip,
+            "validator_coldkey": self.metagraph.coldkeys[dendrite_uid],
+            "validator_hotkey": self.metagraph.hotkeys[dendrite_uid],
+            "validator_stake": self.metagraph.S[dendrite_uid].item(),
+            "validator_trust": self.metagraph.T[dendrite_uid].item(),
+            "validator_incentive": self.metagraph.I[dendrite_uid].item(),
+            "validator_consensus": self.metagraph.C[dendrite_uid].item(),
+            "validator_dividends": self.metagraph.D[dendrite_uid].item(),
+            "miner_stake": self.metagraph.S[self.uid].item(),
+            "miner_trust": self.metagraph.T[self.uid].item(),
+            "miner_incentive": self.metagraph.I[self.uid].item(),
+            "miner_consensus": self.metagraph.C[self.uid].item(),
+            "miner_dividends": self.metagraph.D[self.uid].item(),
             **extra_info,
         }
 
@@ -171,15 +186,4 @@ class Miner(BaseMinerNeuron):
     def log_status(self):
         m = self.metagraph
         bt.logging.info(f"Miner running:: network: {self.subtensor.network} at Subnet {self.config.netuid} | step: {self.step} | miner_uid: {self.uid} | trust: {m.trust[self.uid]:.3f} | emission {m.emission[self.uid]:.3f}")
-
-
-# This is the main function, which runs the miner.
-if __name__ == "__main__":
-    with Miner() as miner:
-        while True:
-            miner.log_status()
-            time.sleep(5)
-
-            if miner.should_exit:
-                bt.logging.warning("Ending miner...")
-                break
+        

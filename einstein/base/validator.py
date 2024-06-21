@@ -31,7 +31,7 @@ class BaseValidatorNeuron(BaseNeuron):
         self.hotkeys = copy.deepcopy(self.metagraph.hotkeys)
 
         # Dendrite lets us send messages to other nodes (axons) in the network.
-        # TODO: Mock the dendrite (Brian/Pedro)
+        
         if self.config.mock:
             self.dendrite = MockDendrite(wallet=self.wallet)
         else:
@@ -82,12 +82,6 @@ class BaseValidatorNeuron(BaseNeuron):
         except Exception as e:
             bt.logging.error(f"Failed to create Axon initialize with exception: {e}")
 
-    async def concurrent_forward(self):
-        coroutines = [
-            self.forward() for _ in range(self.config.neuron.num_concurrent_forwards)
-        ]
-        await asyncio.gather(*coroutines)
-
     def run(self):
         """
         Initiates and manages the main loop for the miner on the Bittensor network. The main loop handles graceful shutdown on keyboard interrupts and logs unforeseen errors.
@@ -128,16 +122,23 @@ class BaseValidatorNeuron(BaseNeuron):
         try:
             while True:
                 bt.logging.info(f"step({self.step}) block({self.block})")
-
-                # Run multiple forwards concurrently.
+                
+                forward_timeout = self.config.neuron.forward_max_time
                 try:
-                    # asyncio.run(self.concurrent_forward())
-                    self.loop.run_until_complete(self.concurrent_forward())
+                    task = self.loop.create_task(self.forward())
+                    self.loop.run_until_complete(
+                        asyncio.wait_for(task, timeout=forward_timeout)
+                    )
                 except torch.cuda.OutOfMemoryError as e:
                     bt.logging.error(f"Out of memory error: {e}")
                     continue
                 except MaxRetryError as e:
                     bt.logging.error(f"MaxRetryError: {e}")
+                    continue
+                except asyncio.TimeoutError as e:
+                    bt.logging.error(
+                        f"Forward timeout: Task execution exceeded {forward_timeout} seconds and was cancelled.: {e}"
+                    )
                     continue
 
                 # Check if we should exit.
@@ -225,14 +226,14 @@ class BaseValidatorNeuron(BaseNeuron):
         raw_weights = torch.nn.functional.normalize(self.scores, p=1, dim=0)
 
         bt.logging.debug("raw_weights", raw_weights)
-        bt.logging.debug("raw_weight_uids", self.metagraph.uids.to("cpu"))
+        bt.logging.debug("raw_weight_uids", self.metagraph.uids)
         # Process the raw weights to final_weights via subtensor limitations.
         (
             processed_weight_uids,
             processed_weights,
         ) = bt.utils.weight_utils.process_weights_for_netuid(
-            uids=self.metagraph.uids.to("cpu"),
-            weights=raw_weights.to("cpu"),
+            uids=self.metagraph.uids,
+            weights=raw_weights.to("cpu").numpy(),
             netuid=self.config.netuid,
             subtensor=self.subtensor,
             metagraph=self.metagraph,
