@@ -7,11 +7,18 @@ This repository contains a Bittensor Miner integrated with 🤗 Hugging Face pip
 - OpenAI Python API (https://github.com/openai/openai)
 
 ## Installation
-1. Clone the repository 
+Clone the repository 
 ```bash
 git clone https://github.com/ait-protocol/einstein-ait-prod.git
+cd prompting
+bash install.sh
+pip uninstall uvloop -y
 ```
-2. Install the required packages for the [repository requirements](../../../requirements.txt) with `pip install -r requirements.txt`
+
+For ease of use, you can run the scripts as well with PM2. Installation of PM2 is: On Linux:
+```bash
+sudo apt update && sudo apt install jq && sudo apt install npm && sudo npm install pm2 -g && pm2 update
+```
 
 
 For more configuration options related to the wallet, axon, subtensor, logging, and metagraph, please refer to the Bittensor documentation.
@@ -32,9 +39,11 @@ Here are some model examples that could be leveraged by the HuggingFace Miner, a
 To run the Hugging Face Bittensor Miner with default settings, use the following command:
 ```bash
 python3 neurons/miners/huggingface/miner.py \
-    --wallet.name <<your-wallet-name>> \
-    --wallet.hotkey <<your-hotkey>>
-    --neuron.model_id <<model_id>>
+--wallet.name <<your-wallet-name>> \
+--wallet.hotkey <<your-hotkey>> \
+--neuron.model_id <<model_id>> \
+--netuid 35/78 (35 is our mainnet and 78 is our testnet) \
+--subtensor.network <finney/local/test>
 ```
 
 or use pm2 to run the miner in the background:
@@ -44,16 +53,20 @@ pm2 start neurons/miners/huggingface/miner.py \
 --interpreter "python" \
 -- --wallet.name <<your-wallet-name>> \
 --wallet.hotkey <<your-hotkey>> \
---neuron.model_id <<model_id>>
+--neuron.model_id <<model_id>> \
+--netuid 35/78 (35 is our mainnet and 78 is our testnet) \
+--subtensor.network <finney/local/test>
 ```
 
 You can also run automatic quantization by adding the flag `--neuron.load_in_8bit` for 8bits quantization and `--neuron.load_in_4bit` for 4 bits quantization:
 ```bash
 python3 neurons/miners/huggingface/miner.py \
-    --wallet.name <<your-wallet-name>> \
-    --wallet.hotkey <<your-hotkey>>
-    --neuron.model_id <<model_id>>
-    --neuron.load_in_8bit True
+--wallet.name <<your-wallet-name>> \
+--wallet.hotkey <<your-hotkey>> \
+--neuron.model_id <<model_id>> \
+--neuron.load_in_8bit True \
+--netuid 35/78 (35 is our mainnet and 78 is our testnet) \
+--subtensor.network <finney/local/test>
 ```
 
 or use pm2 to run the miner in the background:
@@ -63,6 +76,8 @@ pm2 start neurons/miners/huggingface/miner.py \
 --interpreter "python" \
 -- --wallet.name <<your-wallet-name>> \
 --wallet.hotkey <<your-hotkey>> \
---neuron.model_id <<model_id>>
---neuron.load_in_8bit True
+--neuron.model_id <<model_id>> \
+--neuron.load_in_8bit True \
+--netuid 35/78 (35 is our mainnet and 78 is our testnet) \
+--subtensor.network <finney/local/test>
 ```

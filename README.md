@@ -50,7 +50,9 @@ Detailed instructions for setting up the validator node can be found [here](docs
 2. 🗂️ Choose a model type and specify task volume.
 3. 🚀 Start the miner node and contribute computational resources.
 
-Detailed instructions for setting up the miner node can be found [here](docs/miner.md).
+Detailed instructions for setting up the miner node can be found in the miners documentations:
+- [OpenAI Miner](neurons/miners/openai/README.md)
+- [HuggingFace Miner](neurons/miners/huggingface/README.md)
 
 ## Contribution
 We welcome contributions to the Einstein-AIT project! If you have ideas, bug reports, or feature requests, please open an issue on our GitHub repository. To contribute code, fork the repository and submit a pull request.

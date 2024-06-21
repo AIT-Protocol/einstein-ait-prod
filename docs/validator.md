@@ -1,51 +1,52 @@
-# 🧾 Running Validators
+## Prerequisites
+- To run a validator, you will need at least 62GB of VRAM.
 
 ## Installation
-1. **Clone Repository and Install**:
-   ```bash
-   git clone https://github.com/ait-protocol/einstein-ait-prod.git
-   cd einstein-ait-prod
-   bash scripts/install.sh
-   ```
+Clone the repository 
+```bash
+git clone https://github.com/ait-protocol/einstein-ait-prod.git
+cd prompting
+bash install.sh
+```
 
-2. **Update Repository**:
-   ```bash
-   bash scripts/update.sh
-   ```
+For ease of use, you can run the scripts as well with PM2. Installation of PM2 is: On Linux:
+```bash
+sudo apt update && sudo apt install jq && sudo apt install npm && sudo npm install pm2 -g && pm2 update
+```
 
-3. **Install PM2 and jq**:
-   ```bash
-   sudo apt update && sudo apt install jq npm && sudo npm install pm2 -g && pm2 update
-   ```
+For more configuration options related to the wallet, axon, subtensor, logging, and metagraph, please refer to the Bittensor documentation.
 
-## Running Validator
-1. **Install Weights and Biases**:
-   ```bash
-   wandb login
-   ```
+To run the Hugging Face Bittensor Validator with default settings, use the following command:
+```bash
+python neurons/validator.py
+--netuid 35/78 (35 is our mainnet and 78 is our testnet) \
+--subtensor.network <finney/local/test> \
+--neuron.device cuda \
+--wallet.name <your wallet> # Must be created using the bittensor-cli \
+--wallet.hotkey <your hotkey> # Must be created using the bittensor-cli \
+--logging.debug # Run in debug mode, alternatively --logging.trace for trace mode \
+--axon.port # VERY IMPORTANT: set the port to be one of the open TCP ports on your machine \
+```
 
-2. **Run Validator**:
-   ```bash
-   pm2 start run.sh --name s3_validator_autoupdate -- --wallet.name <your-wallet-name> --wallet.hotkey <your-wallet-hot-key>
-   ```
+or use pm2 to run the miner in the background:
+```bash
+pm2 start neurons/validator.py \
+--name "Hugging Face Validator" \
+--interpreter python \
+-- \
+--netuid 35/78 \
+--subtensor.network <finney/local/test> \
+--neuron.device cuda \
+--wallet.name <your wallet> \
+--wallet.hotkey <your hotkey> \
+--logging.debug \
+--axon.port <open TCP port>
+```
 
-3. **Optional Commands**:
-   ```bash
-   python neurons/validator.py --netuid 78 or {} --subtensor.network test or finney --neuron.device cuda --wallet.name <your validator wallet> --wallet.hotkey <your validator hotkey> --logging.debug
-   ```
+Running with autoupdate
+You can run the validator in auto-update mode by using pm2 along with the run.sh bash script. This command will initiate two pm2 processes: one for auto-update monitoring, named s1_validator_update, and another for running the validator itself, named s1_validator_main_process.
 
-4. **Useful PM2 Commands**:
-   ```bash
-   pm2 status # Show status of all pm2 processes
-   pm2 logs s3_validator_autoupdate # Show logs of the validator
-   pm2 stop s3_validator_autoupdate # Stop the validator process
-   ```
-
-## Important Notes
-
-- **CUDA Devices**: To use specific CUDA devices, set the `CUDA_VISIBLE_DEVICES` environment variable. For example:
-  ```bash
-  export CUDA_VISIBLE_DEVICES=1,2
-  ```
-
-- **Weights and Biases**: Running `wandb login` initializes Weights and Biases, enabling you to view KPIs and metrics on your validator, which is strongly recommended to help the network improve from data sharing.
+```bash
+pm2 start run.sh --name validator_autoupdate -- --wallet.name <your-wallet-name> --wallet.hotkey <your-wallet-hot-key>
+```
+Note: this is not an end solution, major releases or changes in requirements will still require you to manually restart the processes. Regularly monitor the health of your validator to ensure optimal performance.

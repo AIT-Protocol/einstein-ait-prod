@@ -1,86 +1,66 @@
 # OpenAI Bittensor Miner
-
 This repository contains a Bittensor Miner that uses langchain and OpenAI's model as its synapse. The miner connects to the Bittensor network, registers its wallet, and serves the GPT model to the network.
 
 ## Prerequisites
 
-- Python 3.9+
-- [OpenAI Python API](https://github.com/openai/openai)
+- Python 3.8+
+- OpenAI Python API (https://github.com/openai/openai)
 
 ## Installation
 
-1. Clone the repository
-
+1. Clone the repository 
 ```bash
-git clone https://github.com/ait-protocol/einstein-ait-prod.git & cd einstein-ait-prod
+git clone https://github.com/ait-protocol/einstein-ait-prod.git
+cd prompting
+bash install.sh
+pip uninstall uvloop -y
 ```
 
-2. Install the required packages
-
+For ease of use, you can run the scripts as well with PM2. Installation of PM2 is: On Linux:
 ```bash
-pip install -r requirements.txt
+sudo apt update && sudo apt install jq && sudo apt install npm && sudo npm install pm2 -g && pm2 update
 ```
 
-3. Install the required packages for the openai miner
-
-```bash
-cd neurons/miners/openai && pip install -r requirements.txt
-```
-
-4. Ensure that you have a `.env` file with your `OPENAI_API_KEY` key
-
-```bash
-echo OPENAI_API_KEY=your-openai-api-key > .env
+2. Ensure that you have a `.env` file with your `OPENAI_API` key
+```.env
+echo OPENAI_API_KEY=YOUR-KEY > .env
 ```
 
 For more configuration options related to the wallet, axon, subtensor, logging, and metagraph, please refer to the Bittensor documentation.
 
 ## Example Usage
 
-We recommend using pm2 to run the miner as it will automatically restart the miner if it crashes.
+To run the OpenAI Bittensor Miner with default settings, use the following command:
 
 ```bash
-pm2 start neurons/miners/openai/miner.py --name s3_openai_miner \
---interpreter python \
--- --netuid 78 \
---subtensor.network test \
---wallet.name <your miner wallet> \
---wallet.hotkey <your miner hotkey> \
---logging.debug \
-# WHAT BELOW IS OPTIONAL, PLEASE READ THE DESCRIPTIONS BELOW
---neuron.model_id gpt-3.5-turbo-0125 \
---neuron.max_tokens 1024 \
---neuron.temperature 0.9 \
---neuron.top_p 0.9 \
---neurom.top_k 50 \
---neuron.system_prompt "your prompt engineering"
---numpal.verbose.off \ # Set this if you want to disable verbose mode for NumPAL
---numpal.off \ # Set this if you want to disable NumPAL (Not recommended)
-
+python3 neurons/miners/openai/miner.py \
+--netuid 35/78 (35 is our mainnet and 78 is our testnet) \
+--subtensor.network <finney/local/test> \
+--wallet.name <<your-wallet-name>> \
+--wallet.hotkey <<your-hotkey>> \
+--neuron.model_id <<model_id>>
 ```
 
-   *NOTE: Your wallet and wallet's hotkey must be created using the bittensor-cli and registered to the netuid 78 (our testnet uid). Additionally, you can run the validator in trace mode by using `--logging.trace` instead of `--logging.debug`*
+You can easily change some key parameters at the CLI, e.g.:
+```bash
+python3 neurons/miners/openai/miner.py \
+--netuid 35/78 (35 is our mainnet and 78 is our testnet) \
+--subtensor.network <finney/local/test> \
+--wallet.name <<your-wallet-name>> \
+--wallet.hotkey <<your-hotkey>> \
+--neuron.model_id gpt-4-1106-preview # default value is gpt3.5 turbo \
+--neuron.max_tokens 1024 # default value is 256 \
+--neuron.temperature 0.9 # default value is 0.7
+```
 
-   *- The `--numpal.off` flag is used to disable NumPAL. NumPAL is a feature that allows the miner to solve mathematical problems using the NumPAL supercharger model. Set this flag if you want to disable NumPAL.*
-
-   *- The `--numpal.verbose.off` flag is used to disable logging mode for NumPAL. Set this flag if you want to disable logging mode for NumPAL.*
-
-   *- The `--neuron.model_id` flag is used to specify the model you want to use. The default value is `gpt3.5-turbo` which is the latest model from OpenAI, you can find out more about the models [here](https://platform.openai.com/docs/models/)*
-
-   *- The `--neuron.max_tokens` flag is used to specify the maximum number of tokens the model can generate which is the length of the response. The default value is `256`*
-
-   *- The `--neuron.temperature` flag is used to specify the temperature of the model which controls the creativeness of the model. The default value is `0.7`*
-
-   *- The `--neuron.top_p` This is like choosing ideas that together make a good story, instead of just picking the absolute best ones. It helps the text be both interesting and sensible. The default value is `0.95`*
-
-   *- The `--neuron.top_k` It's like having a lot of ideas but only picking the few best ones to talk about. This makes the text make more sense.  Reducing the number ensures that the model's choices are among the most probable, leading to more coherent text. The default value is `50`*
-
-   *- The `--neuron.system_prompt` flag is used to specify the prompt for the model. The default value is `"YYou are an AI that excels in solving mathematical problems. Always provide responses concisely and provide helpful explanations through step-by-step solutions. You are honest about things you don't know."`*
-
-   Some useful pm2 commands:
-
-   ```bash
-   pm2 status # This will show you the status of all pm2 processes
-   pm2 logs s3_openai_miner # This will show you the logs of the miner
-   pm2 stop {process_id} # This will stop the process
-   ```
+or use pm2 to run the miner in the background:
+```bash
+pm2 start neurons/miners/openai/miner.py \
+--name "openai_miner" \
+--interpreter "python" \
+-- --wallet.name <<your-wallet-name>> \
+--wallet.hotkey <<your-hotkey>> \
+--neuron.model_id <<model_id>> \
+--netuid 35/78 (35 is our mainnet and 78 is our testnet) \
+--subtensor.network <finney/local/test> \
+```
