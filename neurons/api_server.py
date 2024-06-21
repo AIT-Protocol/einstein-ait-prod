@@ -21,7 +21,7 @@ import asyncio
 
 from einstein.protocol import StreamCoreSynapse, ClientRequestSynapse
 
-ForwardFn = Callable[[CoreSynapse], Awaitable[CoreSynapse]]
+ForwardFn = Callable[[StreamCoreSynapse], Awaitable[StreamCoreSynapse]]
 
 
 class ApiServer:
