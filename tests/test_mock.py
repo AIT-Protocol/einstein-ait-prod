@@ -2,7 +2,7 @@
 # import asyncio
 # import bittensor as bt
 # from einstein.mock import MockDendrite, MockMetagraph, MockSubtensor
-# from einstein.protocol import CoreSynapse
+# from einstein.protocol importStreamCoreSynapse
 
 # wallet = bt.MockWallet()
 # wallet.create(coldkey_use_password=False)
@@ -64,7 +64,7 @@
 #     async def run():
 #         return await mock_dendrite(
 #             axons,
-#             synapse = CoreSynapse(roles=["user"], messages=["What is the capital of France?"]),
+#             synapse =StreamCoreSynapse(roles=["user"], messages=["What is the capital of France?"]),
 #             timeout = timeout
 #         )
 

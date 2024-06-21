@@ -19,7 +19,7 @@ from pydantic import BaseModel
 from uvicorn import Config, Server
 import asyncio
 
-from einstein.protocol import CoreSynapse, ClientRequestSynapse
+from einstein.protocol importStreamCoreSynapse, ClientRequestSynapse
 
 ForwardFn = Callable[[CoreSynapse], Awaitable[CoreSynapse]]
 
@@ -62,7 +62,7 @@ class ApiServer:
             "question_markdown": _request.question_markdown,
         })
         bt.logging.info(f"API: chat_msg {chat_msg}")
-        request = CoreSynapse(roles=["user"], messages=[chat_msg])
+        request =StreamCoreSynapse(roles=["user"], messages=[chat_msg])
         response = await self.forward_fn(request)
         bt.logging.info(f"API: response.completion {response.completion}")
         return JSONResponse(status_code=200,

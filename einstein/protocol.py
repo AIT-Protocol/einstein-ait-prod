@@ -7,24 +7,15 @@ from starlette.responses import StreamingResponse
 
 class ClientRequestSynapse(bt.Synapse):
     question_text: str = pydantic.Field(
-        ...,
-        title="Question Text",
-        description="",
-        allow_mutation=False
+        ..., title="Question Text", description="", allow_mutation=False
     )
-    
+
     question_markdown: str = pydantic.Field(
-        ...,
-        title="Question Markdown",
-        description="",
-        allow_mutation=False
+        ..., title="Question Markdown", description="", allow_mutation=False
     )
 
     question_type: str = pydantic.Field(
-        ...,
-        title="Question Type",
-        description="",
-        allow_mutation=False
+        ..., title="Question Type", description="", allow_mutation=False
     )
 
 
@@ -67,14 +58,14 @@ class StreamCoreSynapse(bt.StreamingSynapse):
     roles: List[str] = pydantic.Field(
         ...,
         title="Roles",
-        description="A list of roles in the CoreSynapse scenario. Immuatable.",
+        description="A list of roles in theStreamCoreSynapse scenario. Immuatable.",
         allow_mutation=False,
     )
 
     messages: List[str] = pydantic.Field(
         ...,
         title="Messages",
-        description="A list of messages in the CoreSynapse scenario. Immutable.",
+        description="A list of messages in theStreamCoreSynapse scenario. Immutable.",
         allow_mutation=False,
     )
 
@@ -88,7 +79,7 @@ class StreamCoreSynapse(bt.StreamingSynapse):
     completion: str = pydantic.Field(
         "",
         title="Completion",
-        description="Completion status of the current CoreSynapse object. This attribute is mutable and can be updated.",
+        description="Completion status of the currentStreamCoreSynapse object. This attribute is mutable and can be updated.",
     )
 
     async def process_streaming_response(

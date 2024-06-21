@@ -8,7 +8,7 @@ from einstein.base.validator import BaseValidatorNeuron
 from einstein.rewards import RewardPipeline
 from queue import SimpleQueue
 from dataclasses import dataclass
-from einstein.protocol import CoreSynapse
+from einstein.protocol importStreamCoreSynapse
 from neurons.api_server import ApiServer
 import threading
 import anyio
@@ -17,9 +17,9 @@ import asyncio
 @dataclass
 class SynapseWithEvent:
     """ Object that API server can send to main thread to be serviced. """
-    input_synapse: CoreSynapse
+    input_synapse:StreamCoreSynapse
     event: threading.Event
-    output_synapse: CoreSynapse 
+    output_synapse:StreamCoreSynapse 
 
 
 
@@ -58,7 +58,7 @@ class Validator(BaseValidatorNeuron):
             forward_fn=self.queue_forward,
         )
         
-    async def queue_forward(self, synapse: CoreSynapse) -> CoreSynapse:
+    async def queue_forward(self, synapse:StreamCoreSynapse) ->StreamCoreSynapse:
         """ Forward function for API server. """ 
         synapse_with_event = SynapseWithEvent(
             input_synapse=synapse,
