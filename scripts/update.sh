@@ -15,7 +15,7 @@ git checkout main
 # Pull the latest changes from the main branch
 git pull
 
-# Run the bash install.sh script
+# Run the bash scripts/install.sh script
 bash scripts/install.sh
 
 # Check if the einstein-ait-prod repository is up to date if it is up to date, let them know

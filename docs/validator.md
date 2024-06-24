@@ -6,7 +6,7 @@ Clone the repository
 ```bash
 git clone https://github.com/ait-protocol/einstein-ait-prod.git
 cd einstein-ait-prod
-bash install.sh
+bash scripts/install.sh
 ```
 
 For ease of use, you can run the scripts as well with PM2. Installation of PM2 is: On Linux:

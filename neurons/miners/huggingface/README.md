@@ -11,7 +11,7 @@ Clone the repository
 ```bash
 git clone https://github.com/ait-protocol/einstein-ait-prod.git
 cd einstein-ait-prod
-bash install.sh
+bash scripts/install.sh
 pip uninstall uvloop -y
 ```
 

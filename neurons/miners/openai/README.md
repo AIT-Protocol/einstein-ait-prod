@@ -12,7 +12,7 @@ This repository contains a Bittensor Miner that uses langchain and OpenAI's mode
 ```bash
 git clone https://github.com/ait-protocol/einstein-ait-prod.git
 cd einstein-ait-prod
-bash install.sh
+bash scripts/install.sh
 pip uninstall uvloop -y
 ```
 
