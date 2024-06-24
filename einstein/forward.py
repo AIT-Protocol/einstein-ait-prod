@@ -244,6 +244,15 @@ async def forward(self):
     forward_start_time = time.time()
 
     while True:
+        # get data in queue
+        try:
+            synapse = self.api_queue.get_nowait()
+        except:
+            await asyncio.sleep(0.1)
+            continue
+        
+        bt.logging.info(f"📡 Received synapse: {synapse}")
+
         bt.logging.info(
             f"📋 Selecting task... from {self.config.neuron.tasks} with distribution {self.config.neuron.task_p}"
         )
@@ -259,74 +268,77 @@ async def forward(self):
                 task_name=task_name,
                 create_reference=False,
             )
-            break
         except Exception as e:
             bt.logging.error(
                 f"Failed to create {task_name} task. {sys.exc_info()}. Skipping to next task."
             )
+            synapse.event.set()
             continue
 
-    # Create random agent with task, topic, profile...
-    bt.logging.info(f"🤖 Creating agent for {task_name} task... ")
-    agent = HumanAgent(
-        task=task, llm_pipeline=self.llm_pipeline, begin_conversation=True
-    )
+        # Create random agent with task, topic, profile...
+        bt.logging.info(f"🤖 Creating agent for {task_name} task... ")
+        agent = HumanAgent(
+            task=task, llm_pipeline=self.llm_pipeline, begin_conversation=True
+        )
 
-    turn = 0
-    exclude_uids = []
-    roles = ['user']
-    messages = [agent.challenge]
-    while True:
-        # Note: The try catch is a safe clause to ensure that the forward loop continues even if an error occurs in run_step.
-        # To be reconsidered in the next version.
-        try:
-            # when run_step is called, the agent updates its progress
-            event = await run_step(
-                self,
-                agent,
-                roles=roles,
-                messages=messages,
-                k=self.config.neuron.sample_size,
-                timeout=self.config.neuron.timeout,
-                exclude=exclude_uids,
-            )
+        turn = 0
+        exclude_uids = []
+        roles = ['user']
+        messages = [agent.challenge]
+        while True:
+            # Note: The try catch is a safe clause to ensure that the forward loop continues even if an error occurs in run_step.
+            # To be reconsidered in the next version.
+            try:
+                # when run_step is called, the agent updates its progress
+                event = await run_step(
+                    self,
+                    agent,
+                    roles=roles,
+                    messages=messages,
+                    k=self.config.neuron.sample_size,
+                    timeout=self.config.neuron.timeout,
+                    exclude=exclude_uids,
+                )
 
-            # Adds forward time to event and logs it to wandb
-            event["forward_time"] = time.time() - forward_start_time
-            event["turn"] = turn
-            log_event(self, event)
-            task.complete = True
-            
-            accepted_answer = event["best"] if random.random() < 0.5 else agent.task.reference
-            roles.append("assistant")
-            messages.append(accepted_answer)
+                # Adds forward time to event and logs it to wandb
+                event["forward_time"] = time.time() - forward_start_time
+                event["turn"] = turn
+                log_event(self, event)
+                task.complete = True
+                
+                accepted_answer = event["best"] if random.random() < 0.5 else agent.task.reference
+                roles.append("assistant")
+                messages.append(accepted_answer)
 
-            # 50% chance of single turn conversation, 25% of two turns, 12.5% chance of 3 turns, 6.25% chance of 4 turns, 3.63% chance of 5...
-            if random.random()<0.5 or turn>=1:
-                break
+                # 50% chance of single turn conversation, 25% of two turns, 12.5% chance of 3 turns, 6.25% chance of 4 turns, 3.63% chance of 5...
+                if random.random()<0.5 or turn>=1:
+                    break
 
-            if task.name in SINGLE_TURN_TASKS:
-                break
+                if task.name in SINGLE_TURN_TASKS:
+                    break
 
-            history = '\n'.join([f"{role}: {message}" for role, message in zip(roles, messages)])
+                history = '\n'.join([f"{role}: {message}" for role, message in zip(roles, messages)])
 
-            # overwrite the challenge with the followup query, which *should* continue the persona
-            agent.challenge = agent.task.query
+                # overwrite the challenge with the followup query, which *should* continue the persona
+                agent.challenge = agent.task.query
 
-            roles.append("user")
-            messages.append(agent.challenge)
-            turn += 1
+                roles.append("user")
+                messages.append(agent.challenge)
+                turn += 1
 
-        except BaseException as e:
-            unexpected_errors = serialize_exception_to_string(e)
-            bt.logging.error(
-                f"Error in run_step: Skipping to next round. \n {unexpected_errors}"
-            )
+            except BaseException as e:
+                unexpected_errors = serialize_exception_to_string(e)
+                bt.logging.error(
+                    f"Error in run_step: Skipping to next round. \n {unexpected_errors}"
+                )
 
-            event = {"unexpected_errors": unexpected_errors}
+                event = {"unexpected_errors": unexpected_errors}
 
-            log_event(self, event)
-            continue
+                log_event(self, event)
+                continue
 
-    del agent
-    del task
+        del agent
+        del task
+        synapse.event.set()
+        self.api_queue.task_done()
+
