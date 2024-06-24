@@ -5,7 +5,7 @@
 Clone the repository 
 ```bash
 git clone https://github.com/ait-protocol/einstein-ait-prod.git
-cd einstein
+cd einstein-ait-prod
 bash install.sh
 ```
 
