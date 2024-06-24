@@ -94,8 +94,7 @@ class AdvancedMathModel(BaseRewardModel):
         
         return final_score
 
-
-def reward(self, reference: str, response_event: DendriteResponseEvent) -> BatchRewardOutput:
+    def reward(self, reference: str, response_event: DendriteResponseEvent) -> BatchRewardOutput:
         """Compute difference scores given a completion and reference pair."""
         rewards = []
         timings = []
