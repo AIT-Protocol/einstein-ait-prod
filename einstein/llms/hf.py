@@ -1,15 +1,19 @@
 import time
 from typing import List, Dict
 import bittensor as bt
+
 from transformers import BitsAndBytesConfig, pipeline, AutoTokenizer, TextIteratorStreamer
 from einstein.mock import MockPipeline
 from einstein.cleaners.cleaner import CleanerPipeline
+from transformers import pipeline, TextIteratorStreamer, AutoTokenizer
 from einstein.llms import BasePipeline, BaseLLM
+
 
 class CustomTextIteratorStreamer(TextIteratorStreamer):
     """
     TextIteratorStreamer stores print-ready text in a queue, to be used by a downstream application as an iterator.
     The queue is thread-safe and can be used to stream data from the model to the application.
+
     TextIteratorStreamer has internal methods to raise a StopIteration if a stop signal is received
     (stop signal is when the value returned from the Queue is None), but this is not flexible enough.
     Therefore, we add methods to check and clean the queue manually.
@@ -23,6 +27,7 @@ class CustomTextIteratorStreamer(TextIteratorStreamer):
         """Clear the queue."""
         with self.text_queue.mutex:  # ensures that the queue is cleared safely in a multi-threaded environment
             self.text_queue.queue.clear()
+
 
 def load_hf_pipeline(
     model_id: str,
@@ -39,7 +44,7 @@ def load_hf_pipeline(
 
     if not device.startswith("cuda"):
         bt.logging.warning("Only crazy people run this on CPU. It is not recommended.")
-        
+
     try:
         tokenizer = AutoTokenizer.from_pretrained(
             model_id
@@ -76,6 +81,7 @@ def load_hf_pipeline(
     if return_streamer:
         return llm_pipeline, streamer
     return llm_pipeline
+
 
 class HuggingFacePipeline(BasePipeline):
     def __init__(
@@ -115,6 +121,7 @@ class HuggingFacePipeline(BasePipeline):
         if self.mock:
             return self.pipeline(composed_prompt, **kwargs)
 
+        # Extract the generated text from the pipeline output
         outputs = self.pipeline(composed_prompt, **kwargs)
         return outputs[0]["generated_text"]
 
@@ -178,7 +185,6 @@ class HuggingFaceLLM(BaseLLM):
         _ = self.llm_pipeline(prompt, streamer=streamer, **self.model_kwargs)
 
         return streamer
-
 
     def __call__(self, messages: List[Dict[str, str]]):
         return self.forward(messages=messages)

@@ -115,13 +115,13 @@ class HuggingFaceMiner(BaseStreamMiner):
             system_message = ""
             
             # Get the math question from the last message
-            role = synapse.roles[-1]
-            raw_message = synapse.messages[-1]
-            message = urllib.parse.parse_qs(raw_message)
-            math_question = message.get("question_text", [''])[0]
-            message_type = message.get("question_type", [''])[0]
+            # role = synapse.roles[-1]
+            # raw_message = synapse.messages[-1]
+            # message = urllib.parse.parse_qs(raw_message)
+            # math_question = message.get("question_text", [''])[0]
+            # message_type = message.get("question_type", [''])[0]
 
-            prompt = math_question
+            # prompt = math_question
             bt.logging.debug(f"📧 Message received, forwarding synapse: {synapse}")
 
             try:
