@@ -21,7 +21,7 @@ class ClientRequestSynapse(bt.Synapse):
 
 class StreamCoreSynapse(bt.StreamingSynapse):
     """
-    StreamCoreSynapse is a specialized implementation of the `StreamingSynapse` tailored for prompting functionalities within
+    StreamCoreSynapse is a specialized implementation of the `StreamingSynapse` tailored for einstein functionalities within
     the Bittensor network. This class is intended to interact with a streaming response that contains a sequence of tokens,
     which represent prompts or messages in a certain scenario.
 

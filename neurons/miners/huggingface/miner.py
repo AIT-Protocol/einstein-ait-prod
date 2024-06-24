@@ -5,21 +5,22 @@ import bittensor as bt
 from functools import partial
 from starlette.types import Send
 from typing import Awaitable
-
-from einstein.protocol import StreamCoreSynapse
-from einstein.llms import load_hf_pipeline, HuggingFaceLLM, HuggingFacePipeline
-from einstein.utils.config import add_hf_miner_args
-
-from einstein.base.einstein_miner import BaseStreamMiner
-
-from deprecated import deprecated # type: ignore
 import urllib.parse
 
-@deprecated(version="2.0.0+", reason="Class is deprecated, use openai miner for reference on example miner.")
+# Bittensor Miner Template:
+from einstein.utils.config import add_hf_miner_args
+from einstein.protocol import StreamCoreSynapse
+from einstein.llms import HuggingFaceLLM, HuggingFacePipeline, load_hf_pipeline
+
+# import base miner class which takes care of most of the boilerplate
+from einstein.base.einstein_miner import BaseStreamMiner
+from deprecated import deprecated # type: ignore
+
+@deprecated(version="2.0.2+", reason="Class is deprecated, use openai miner for reference on example miner.")
 class HuggingFaceMiner(BaseStreamMiner):
     """
     Base miner which runs Zephyr (https://huggingface.co/HuggingFaceH4/zephyr-7b-beta)    
-    This requires a GPU with at least 20GB of memory.
+    This requires a GPU with at least 62GB of memory.
     To run this miner from the project root directory:
     
     pm2 start neurons/miners/huggingface/miner.py \
@@ -46,49 +47,48 @@ class HuggingFaceMiner(BaseStreamMiner):
         Adds arguments to the command line parser.
         """
         super().add_args(parser)
-        add_hf_miner_args(cls, parser)
 
     def __init__(self, config=None):
         super().__init__(config=config)
 
-        bt.logging.info(f"Initializing with model {self.config.neuron.model_id}...")
-        
         model_kwargs = None
-        if self.config.neuron.load_quantized:
-            bt.logging.info("Loading quantized model...")
+        if self.config.neuron.load_in_8bit:
+            bt.logging.info("Loading 8 bit quantized model...")
             model_kwargs = dict(
                 torch_dtype=torch.float16,
                 load_in_8bit=True,
             )
 
-        if self.config.wandb.on:
-            self.identity_tags = ("HuggingFace_miner",)
+        if self.config.neuron.load_in_4bit:
+            bt.logging.info("Loading 4 bit quantized model...")
+            model_kwargs = dict(
+                torch_dtype=torch.float32,
+                load_in_4bit=True,
+            )
 
-            if self.config.neuron.load_quantized:
-                self.identity_tags += ("8bits_quantization",)
+        if self.config.wandb.on:
+            self.identity_tags = ("hf_miner",)
+
+            if self.config.neuron.load_in_8bit:
+                self.identity_tags += ("8bit_quantization",)
+            elif self.config.neuron.load_in_4bit:
+                self.identity_tags += ("4bit_quantization",)
+
+        # Forces model loading behaviour over mock flag
+        mock = (
+            False if self.config.neuron.should_force_model_loading else self.config.mock
+        )
 
         self.llm_pipeline = HuggingFacePipeline(
             model_id=self.config.neuron.model_id,
-            torch_dtype=torch.float16,
+            torch_dtype=torch.bfloat16,
             device=self.device,
-            mock=self.config.mock,
+            mock=mock,
             model_kwargs=model_kwargs,
         )
 
-        self.system_prompt = """
-        You are an advanced Math AI Solver. Your task is to provide users with clear and concise explanations 
-        and answers to their math questions.
-        After the generation you must end the generation with 'The final answer is: {the answer}'.
-        Example:
-        - User's Question ask: How do I solve for x in the equation 2x + 3 = 7?"},
-        - Response:
-        To solve for x in the equation 2x + 3 = 7
-        We first subtract 3 from both sides of the equation to get 2x = 4.
-        Then, we divide both sides by 2 to find x = 2.
-        The final answer is: 2"
-        """
-        
-        bt.logging.info(f"🧠 HuggingFace current system prompt: {self.system_prompt}")
+        self.model_id = self.config.neuron.model_id
+        self.system_prompt = self.config.neuron.system_prompt
 
     def forward(self, synapse: StreamCoreSynapse) -> Awaitable:
         async def _forward(
@@ -108,11 +108,20 @@ class HuggingFaceMiner(BaseStreamMiner):
                 streamer (CustomTextIteratorStreamer): Iterator that holds tokens within a background Queue to be returned when sampled.
                 send (Send): bittensor aiohttp send function to send the response back to the validator.
             """
-            
+
             buffer = []
             temp_completion = ""  # for wandb logging
             timeout_reached = False
             system_message = ""
+            
+            # Get the math question from the last message
+            role = synapse.roles[-1]
+            raw_message = synapse.messages[-1]
+            message = urllib.parse.parse_qs(raw_message)
+            math_question = message.get("question_text", [''])[0]
+            message_type = message.get("question_type", [''])[0]
+
+            prompt = math_question
             bt.logging.debug(f"📧 Message received, forwarding synapse: {synapse}")
 
             try:
@@ -218,55 +227,6 @@ class HuggingFaceMiner(BaseStreamMiner):
         )
 
         return synapse.create_streaming_response(token_streamer)
-    
-        # try:
-        #     t0 = time.time()
-        #     bt.logging.debug(f"📧 Message received, forwarding synapse: {synapse}")
-
-        #     # Get the math question from the last message
-        #     role = synapse.roles[-1]
-        #     raw_message = synapse.messages[-1]
-        #     message = urllib.parse.parse_qs(raw_message)
-        #     math_question = message.get("question_text", [''])[0]
-        #     message_type = message.get("question_type", [''])[0]
-
-        #     prompt = math_question
-        #     bt.logging.debug(f"💬 Querying Zephyr: {prompt}")
-
-        #     response = HuggingFaceLLM(
-        #         llm_pipeline=self.llm_pipeline,
-        #         system_prompt=self.system_prompt,
-        #         max_new_tokens=self.config.neuron.max_tokens,
-        #         do_sample=self.config.neuron.do_sample,
-        #     ).query(
-        #         message=prompt,  # For now we just take the last message
-        #         role="user",
-        #         disregard_system_prompt=False,
-        #     )
-
-        #     synapse.completion = response
-        #     synapse_latency = time.time() - t0
-
-        #     if self.config.wandb.on:
-        #         # TODO: Add system prompt to wandb config and not on every step
-        #         self.log_event(
-        #             timing=synapse_latency,
-        #             prompt=prompt,
-        #             completion=response,
-        #             system_prompt=self.system_prompt,
-        #         )
-
-        #     bt.logging.debug(f"✅ Served Response: {response}")
-        #     torch.cuda.empty_cache()
-        #     self.step += 1
-
-        # except Exception as e:
-        #     bt.logging.error(f"Error: {e}")
-        #     synapse.completion = "Error: " + str(e)
-        # finally:
-        #     if self.config.neuron.stop_on_forward_exception:
-        #         self.should_exit = True
-        #     return synapse
 
 def main():
     with HuggingFaceMiner() as miner:
