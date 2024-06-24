@@ -14,9 +14,13 @@ from einstein.llms import HuggingFaceLLM, HuggingFacePipeline, load_hf_pipeline
 
 # import base miner class which takes care of most of the boilerplate
 from einstein.base.einstein_miner import BaseStreamMiner
-from deprecated import deprecated # type: ignore
+from deprecated import deprecated  # type: ignore
 
-@deprecated(version="2.0.2+", reason="Class is deprecated, use openai miner for reference on example miner.")
+
+@deprecated(
+    version="2.0.3+",
+    reason="Class is deprecated, use openai miner for reference on example miner.",
+)
 class HuggingFaceMiner(BaseStreamMiner):
     """
     Base miner which runs Zephyr (https://huggingface.co/HuggingFaceH4/zephyr-7b-beta)    
@@ -126,13 +130,13 @@ class HuggingFaceMiner(BaseStreamMiner):
             temp_completion = ""  # for wandb logging
             timeout_reached = False
             system_message = ""
-            
+
             # Get the math question from the last message
             role = synapse.roles[-1]
             raw_message = synapse.messages[-1]
             message = urllib.parse.parse_qs(raw_message)
-            math_question = message.get("question_text", [''])[0]
-            message_type = message.get("question_type", [''])[0]
+            math_question = message.get("question_text", [""])[0]
+            message_type = message.get("question_type", [""])[0]
 
             # prompt = math_question
             bt.logging.debug(f"📧 Message received, forwarding synapse: {synapse}")
@@ -240,6 +244,7 @@ class HuggingFaceMiner(BaseStreamMiner):
         )
 
         return synapse.create_streaming_response(token_streamer)
+
 
 def main():
     with HuggingFaceMiner() as miner:
