@@ -16,6 +16,12 @@ bash scripts/install.sh
 pip uninstall uvloop -y
 ```
 
+2. Install OpenAI Langchain dependencies
+```bash
+cd neurons/miners/openai
+pip install -r requirements.txt
+```
+
 For ease of use, you can run the scripts as well with PM2. Installation of PM2 is: On Linux:
 ```bash
 sudo apt update && sudo apt install jq && sudo apt install npm && sudo npm install pm2 -g && pm2 update
