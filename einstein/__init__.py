@@ -1,4 +1,4 @@
-__version__ = "2.0.2"
+__version__ = "2.0.3"
 version_split = __version__.split(".")
 __spec_version__ = (
     (10000 * int(version_split[0]))
@@ -18,6 +18,7 @@ from . import forward
 from . import agent
 from . import conversation
 from . import dendrite
+
 # from . import shared
 from . import validator
 
