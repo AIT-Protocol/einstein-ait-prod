@@ -39,7 +39,7 @@ class BaseStreamMiner(BaseStreamMinerNeuron):
         requests before they are deserialized to avoid wasting resources on requests that will be ignored.
 
         Args:
-            synapse (CoreSynapse): A synapse object constructed from the headers of the incoming request.
+            synapse (StreamCoreSynapse): A synapse object constructed from the headers of the incoming request.
 
         Returns:
             Tuple[bool, str]: A tuple containing a boolean indicating whether the synapse's hotkey is blacklisted,
