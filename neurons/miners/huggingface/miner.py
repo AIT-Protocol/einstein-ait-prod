@@ -8,7 +8,7 @@ from typing import Awaitable
 import urllib.parse
 
 # Bittensor Miner Template:
-from einstein.utils.config import add_hf_miner_args
+from einstein.utils.config import add_hf_miner_args, add_miner_args
 from einstein.protocol import StreamCoreSynapse
 from einstein.llms import HuggingFaceLLM, HuggingFacePipeline, load_hf_pipeline
 
@@ -47,6 +47,7 @@ class HuggingFaceMiner(BaseStreamMiner):
         Adds arguments to the command line parser.
         """
         super().add_args(parser)
+        add_hf_miner_args(cls, parser)
 
     def __init__(self, config=None):
         super().__init__(config=config)
@@ -88,7 +89,19 @@ class HuggingFaceMiner(BaseStreamMiner):
         )
 
         self.model_id = self.config.neuron.model_id
-        self.system_prompt = self.config.neuron.system_prompt
+        # self.system_prompt = self.config.neuron.system_prompt
+        self.system_prompt = """
+        You are an advanced Math AI Solver. Your task is to provide users with clear and concise explanations 
+        and answers to their math questions.
+        After the generation you must end the generation with 'The final answer is: {the answer}'.
+        Example:
+        - User's Question ask: How do I solve for x in the equation 2x + 3 = 7?"},
+        - Response:
+        To solve for x in the equation 2x + 3 = 7
+        We first subtract 3 from both sides of the equation to get 2x = 4.
+        Then, we divide both sides by 2 to find x = 2.
+        The final answer is: 2"
+        """
 
     def forward(self, synapse: StreamCoreSynapse) -> Awaitable:
         async def _forward(
@@ -115,11 +128,11 @@ class HuggingFaceMiner(BaseStreamMiner):
             system_message = ""
             
             # Get the math question from the last message
-            # role = synapse.roles[-1]
-            # raw_message = synapse.messages[-1]
-            # message = urllib.parse.parse_qs(raw_message)
-            # math_question = message.get("question_text", [''])[0]
-            # message_type = message.get("question_type", [''])[0]
+            role = synapse.roles[-1]
+            raw_message = synapse.messages[-1]
+            message = urllib.parse.parse_qs(raw_message)
+            math_question = message.get("question_text", [''])[0]
+            message_type = message.get("question_type", [''])[0]
 
             # prompt = math_question
             bt.logging.debug(f"📧 Message received, forwarding synapse: {synapse}")
