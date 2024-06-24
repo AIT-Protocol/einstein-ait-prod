@@ -6,6 +6,7 @@ from starlette.types import Send
 from functools import partial
 from typing import Dict, Awaitable, List
 import urllib.parse
+import traceback
 
 from einstein.base.einstein_miner import BaseStreamMiner
 from einstein.protocol import StreamCoreSynapse
