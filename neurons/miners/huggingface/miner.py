@@ -19,7 +19,7 @@ import urllib.parse
 class HuggingFaceMiner(BaseStreamMiner):
     """
     Base miner which runs Zephyr (https://huggingface.co/HuggingFaceH4/zephyr-7b-beta)    
-    This requires a GPU with at least 20GB of memory.
+    This requires a GPU with at least 62GB of memory.
     To run this miner from the project root directory:
     
     pm2 start neurons/miners/huggingface/miner.py \
@@ -114,7 +114,17 @@ class HuggingFaceMiner(BaseStreamMiner):
             timeout_reached = False
             system_message = ""
             bt.logging.debug(f"📧 Message received, forwarding synapse: {synapse}")
+            
+            # Get the math question from the last message
+            role = synapse.roles[-1]
+            raw_message = synapse.messages[-1]
+            message = urllib.parse.parse_qs(raw_message)
+            math_question = message.get("question_text", [''])[0]
+            message_type = message.get("question_type", [''])[0]
 
+            prompt = math_question
+            # bt.logging.debug(f"💬 Querying Zephyr: {prompt}")
+            
             try:
                 streamer = HuggingFaceLLM(
                     llm_pipeline=self.llm_pipeline,
